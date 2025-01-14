@@ -90,13 +90,14 @@ SEPOLIA_RPC_URL=your_sepolia_rpc_url
 
 2. Deploy to testnet (Sepolia):
 ```bash
-forge script script/Deploy.s.sol:Deploy --rpc-url $SEPOLIA_RPC_URL --broadcast --verify -vvvv
+forge script script/DeployNftCollectionFactory.s.sol --rpc-url $SEPOLIA_RPC_URL --broadcast --private-key $$PRIVATE_KEY -vvvv
 ```
 
 ## Contract Addresses
 - Sepolia Testnet:
-  - NFTCollection: `0x2e70EBbefc792bB3b842363771F7a3d0E3223721`
-  - NFTMarketplace: `0x15053f4bf121a516C5454D9A69638B281907Fe71`
+  - NFTCollection: `0x92dBD77b90dbEb203c37Ce7C5b095eaDE9D17e42`
+  - NFTMarketplace: `0x29cDaD5194854D2063da1B751DBAB7fAC7B3b9FC`
+  - NFTCollectionFactory: `0xf4D960AB1fCC1F39a8d9cc4054b2a015aD876Ef1`
 
 ## Usage Examples
 
