@@ -95,9 +95,9 @@ forge script script/DeployNftCollectionFactory.s.sol --rpc-url $SEPOLIA_RPC_URL 
 
 ## Contract Addresses
 - Sepolia Testnet:
-  - NFTCollection: `0x92dBD77b90dbEb203c37Ce7C5b095eaDE9D17e42`
-  - NFTMarketplace: `0x29cDaD5194854D2063da1B751DBAB7fAC7B3b9FC`
-  - NFTCollectionFactory: `0xf4D960AB1fCC1F39a8d9cc4054b2a015aD876Ef1`
+  - NFTCollection: `0x970D64256C4cA8f0B828183F4F83f8Fdc9831Cb7`
+  - NFTMarketplace: `0x078665C74c9C0C00634Abda5B63dF03648a2ec3e`
+  - NFTCollectionFactory: `0xd27cb94d82e9550d135efa675cFE71B1B5abD234`
 
 ## Usage Examples
 

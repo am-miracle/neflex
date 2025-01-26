@@ -12,7 +12,7 @@ Use this command to add additional dataSources to your Subgraph.
 ```
 // sample
 graph add 0x29cDaD5194854D2063da1B751DBAB7fAC7B3b9FC \
---abi ../smartcontract/out/NFTMarketplace.sol/NFTMarketplace.json \
+--abi ../smartcontract/out/NFTCollection.sol/NFTCollection.json \
 --contract-name NFTMarketplace \
 --network sepolia
 ```

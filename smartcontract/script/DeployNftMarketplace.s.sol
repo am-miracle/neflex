@@ -5,10 +5,16 @@ import {Script} from "forge-std/Script.sol";
 import {NFTMarketplace} from "../src/NFTMarketplace.sol";
 import {HelperConfig} from "./HelperConfig.s.sol";
 
+/**
+ * @title DeployNftMarketplace
+ * @notice Script to deploy the NFTMarketplace contract and initialize categories.
+ */
 contract DeployNftMarketplace is Script {
     function run() external returns (NFTMarketplace, HelperConfig) {
         HelperConfig helperConfig = new HelperConfig();
         (uint256 deployerKey, uint256 marketplaceFee,,,,,) = helperConfig.activeNetworkConfig();
+
+        require(deployerKey != 0, "Deployer key not set");
 
         vm.startBroadcast(deployerKey);
 
@@ -29,6 +35,9 @@ contract DeployNftMarketplace is Script {
         return (nftMarketplace, helperConfig);
     }
 
+    /**
+     * @notice Returns an array of initial category hashes.
+     */
     function getInitialCategories() public pure returns (bytes32[] memory) {
         bytes32[] memory categories = new bytes32[](8);
         categories[0] = keccak256(abi.encodePacked("Art"));
@@ -43,6 +52,9 @@ contract DeployNftMarketplace is Script {
         return categories;
     }
 
+    /**
+     * @notice Returns an array of initial category names.
+     */
     function getCategoryNames() public pure returns (string[] memory) {
         string[] memory names = new string[](8);
         names[0] = "Art";

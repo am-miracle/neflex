@@ -11,8 +11,7 @@ import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 
 /**
  * @title NFTCollection
- * @dev Enhanced NFT contract with advanced features including metadata management,
- *      royalties,
+ * @dev Enhanced NFT contract with advanced features including metadata management, royalties, and locking mechanisms.
  */
 contract NFTCollection is ERC721, ERC721URIStorage, ERC721Enumerable, ERC2981, Ownable, ReentrancyGuard {
     // Custom errors
@@ -24,6 +23,8 @@ contract NFTCollection is ERC721, ERC721URIStorage, ERC721Enumerable, ERC2981, O
     error NFTCollection__InvalidMetadata();
     error NFTCollection__NotTokenOwner();
     error NFTCollection__URIAlreadyLocked();
+    error NFTCollection__BatchSizeTooLarge();
+    error NFTCollection__PublicMintDisabled();
 
     // Type declarations
     using Strings for uint256;
@@ -41,6 +42,8 @@ contract NFTCollection is ERC721, ERC721URIStorage, ERC721Enumerable, ERC2981, O
     uint96 private _nextTokenId;
     uint96 public constant MIN_ROYALTY_FEE = 0;
     uint96 public constant MAX_ROYALTY_FEE = 1000; // 10% in basis points
+    uint256 public constant MAX_BATCH_SIZE = 100; // Limit for batch minting
+    bool public isPublicMintEnabled;
 
     uint256 private immutable i_maxSupply;
 
@@ -68,6 +71,13 @@ contract NFTCollection is ERC721, ERC721URIStorage, ERC721Enumerable, ERC2981, O
         _;
     }
 
+    modifier onlyMinterOrOwner() {
+        if (msg.sender != owner() && !isPublicMintEnabled) {
+            revert NFTCollection__PublicMintDisabled();
+        }
+        _;
+    }
+
     constructor(string memory name, string memory symbol, string memory baseTokenURI, uint256 maxSupply)
         ERC721(name, symbol)
         Ownable(msg.sender)
@@ -89,9 +99,13 @@ contract NFTCollection is ERC721, ERC721URIStorage, ERC721Enumerable, ERC2981, O
     function mint(address to, string calldata _tokenURI, uint96 royaltyFee)
         external
         onlyOwner
+        onlyMinterOrOwner
         nonReentrant
         returns (uint256)
     {
+        if (royaltyFee < MIN_ROYALTY_FEE || royaltyFee > MAX_ROYALTY_FEE) {
+            revert NFTCollection__InvalidRoyaltyFee();
+        }
         uint256 tokenId = _mintSingle(to, _tokenURI, royaltyFee);
         emit TokenMinted(to, tokenId, _tokenURI, royaltyFee);
         return tokenId;
@@ -106,10 +120,13 @@ contract NFTCollection is ERC721, ERC721URIStorage, ERC721Enumerable, ERC2981, O
     function batchMint(address to, string[] calldata tokenURIs, uint96 royaltyFee)
         external
         onlyOwner
+        onlyMinterOrOwner
+        nonReentrant
         returns (uint256[] memory)
     {
         uint256 length = tokenURIs.length;
         if (length == 0) revert NFTCollection__InvalidArrayLength();
+        if (length > MAX_BATCH_SIZE) revert NFTCollection__BatchSizeTooLarge();
         if (_nextTokenId + length > i_maxSupply) revert NFTCollection__MaxSupplyReached();
 
         uint256[] memory tokenIds = new uint256[](length);
@@ -127,16 +144,24 @@ contract NFTCollection is ERC721, ERC721URIStorage, ERC721Enumerable, ERC2981, O
      * @dev Sets the base URI for all tokens
      * @param newBaseURI New base URI
      */
-    function setBaseURI(string calldata newBaseURI) public onlyOwner {
+    function setBaseURI(string calldata newBaseURI) external onlyOwner {
         if (_baseURILocked) revert NFTCollection__URIAlreadyLocked();
         _baseTokenURI = newBaseURI;
         emit BaseURIUpdated(newBaseURI);
     }
 
     /**
+     * @dev Sets the public minting state
+     * @param enabled True if public minting is enabled, false otherwise
+     */
+    function setPublicMintEnabled(bool enabled) external onlyOwner {
+        isPublicMintEnabled = enabled;
+    }
+
+    /**
      * @dev Locks the base URI permanently
      */
-    function lockBaseURI() public onlyOwner {
+    function lockBaseURI() external onlyOwner {
         _baseURILocked = true;
         emit BaseURILocked();
     }
@@ -146,7 +171,9 @@ contract NFTCollection is ERC721, ERC721URIStorage, ERC721Enumerable, ERC2981, O
      * @param tokenId ID of the token to update
      * @param name New name for the token
      * @param description New description for the token
+     * @param image New image URI for the token
      * @param attributeKeys Key-value pairs of attributes
+     * @param attributeValues Key-value pairs of attributes
      */
     function updateTokenMetadata(
         uint256 tokenId,
@@ -155,8 +182,8 @@ contract NFTCollection is ERC721, ERC721URIStorage, ERC721Enumerable, ERC2981, O
         string memory image,
         string[] memory attributeKeys,
         string[] memory attributeValues
-    ) public onlyOwner {
-        if (_ownerOf(tokenId) == address(0)) revert NFTCollection__NonExistentToken();
+    ) external onlyOwner {
+        if (!_tokenExists(tokenId)) revert NFTCollection__NonExistentToken();
         if (_tokenURILocked[tokenId]) revert NFTCollection__URIAlreadyLocked();
         if (attributeKeys.length != attributeValues.length) revert NFTCollection__InvalidMetadata();
 
@@ -178,36 +205,21 @@ contract NFTCollection is ERC721, ERC721URIStorage, ERC721Enumerable, ERC2981, O
      * @dev Locks a token's URI permanently
      * @param tokenId ID of the token to lock
      */
-    function lockTokenURI(uint256 tokenId) public onlyOwner {
+    function lockTokenURI(uint256 tokenId) external onlyOwner {
         if (!_tokenExists(tokenId)) revert NFTCollection__NonExistentToken();
         _tokenURILocked[tokenId] = true;
         emit TokenURILocked(tokenId);
     }
 
-    // Required overrides
-
     /*//////////////////////////////////////////////////////////////
-                           PUBLIC VIEW FUNCTIONS
-    //////////////////////////////////////////////////////////////*/
-    function tokenURI(uint256 tokenId) public view override(ERC721, ERC721URIStorage) returns (string memory) {
-        return super.tokenURI(tokenId);
-    }
-
-    function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        override(ERC721, ERC721URIStorage, ERC721Enumerable, ERC2981)
-        returns (bool)
-    {
-        return super.supportsInterface(interfaceId);
-    }
-    /*//////////////////////////////////////////////////////////////
-                           INTERNAL AND INTERNAL VIEW FUNCTIONS
+                           INTERNAL FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
     function _mintSingle(address to, string calldata _tokenURI, uint96 royaltyFee) internal returns (uint256) {
         if (to == address(0)) revert NFTCollection__MintToZeroAddress();
-        if (royaltyFee > MAX_ROYALTY_FEE) revert NFTCollection__InvalidRoyaltyFee();
+        if (royaltyFee < MIN_ROYALTY_FEE || royaltyFee > MAX_ROYALTY_FEE) {
+            revert NFTCollection__InvalidRoyaltyFee();
+        }
         if (_nextTokenId >= i_maxSupply) revert NFTCollection__MaxSupplyReached();
 
         uint256 tokenId = _nextTokenId++;
@@ -217,6 +229,10 @@ contract NFTCollection is ERC721, ERC721URIStorage, ERC721Enumerable, ERC2981, O
 
         return tokenId;
     }
+
+    /*//////////////////////////////////////////////////////////////
+                           OVERRIDES
+    //////////////////////////////////////////////////////////////*/
 
     function _baseURI() internal view override returns (string memory) {
         return _baseTokenURI;
@@ -234,19 +250,23 @@ contract NFTCollection is ERC721, ERC721URIStorage, ERC721Enumerable, ERC2981, O
         super._increaseBalance(account, value);
     }
 
-    // Internal View functions
-    /**
-     * @dev Checks if a token exists
-     * @param tokenId ID of the token to check
-     * @return bool whether the token exists
-     */
-    function _tokenExists(uint256 tokenId) internal view returns (bool) {
-        return _ownerOf(tokenId) != address(0);
+    function tokenURI(uint256 tokenId) public view override(ERC721, ERC721URIStorage) returns (string memory) {
+        return super.tokenURI(tokenId);
+    }
+
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        override(ERC721, ERC721URIStorage, ERC721Enumerable, ERC2981)
+        returns (bool)
+    {
+        return super.supportsInterface(interfaceId);
     }
 
     /*//////////////////////////////////////////////////////////////
                             GETTER FUNCTIONS
     //////////////////////////////////////////////////////////////*/
+
     function getTokenCount() public view returns (uint256) {
         return _nextTokenId;
     }
@@ -275,5 +295,18 @@ contract NFTCollection is ERC721, ERC721URIStorage, ERC721Enumerable, ERC2981, O
         if (!_tokenExists(tokenId)) revert NFTCollection__NonExistentToken();
         TokenMetadata storage metadata = _tokenMetadata[tokenId];
         return (metadata.name, metadata.description, metadata.image);
+    }
+
+    function getTokenAttribute(uint256 tokenId, string memory key) public view returns (string memory) {
+        if (!_tokenExists(tokenId)) revert NFTCollection__NonExistentToken();
+        return _tokenMetadata[tokenId].attributes[key];
+    }
+
+    /*//////////////////////////////////////////////////////////////
+                           INTERNAL VIEW FUNCTIONS
+    //////////////////////////////////////////////////////////////*/
+
+    function _tokenExists(uint256 tokenId) internal view returns (bool) {
+        return _ownerOf(tokenId) != address(0);
     }
 }

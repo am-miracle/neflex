@@ -144,3 +144,4 @@ export const GET_CREATOR_NFTS = gql`
     }
   }
 `
+
