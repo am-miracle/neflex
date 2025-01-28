@@ -32,6 +32,19 @@ export const NFT_COLLECTION_ABI = [
   },
   {
     "type": "function",
+    "name": "MAX_BATCH_SIZE",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
     "name": "MAX_ROYALTY_FEE",
     "inputs": [],
     "outputs": [
@@ -169,6 +182,30 @@ export const NFT_COLLECTION_ABI = [
   },
   {
     "type": "function",
+    "name": "getTokenAttribute",
+    "inputs": [
+      {
+        "name": "tokenId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "key",
+        "type": "string",
+        "internalType": "string"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "string",
+        "internalType": "string"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
     "name": "getTokenCount",
     "inputs": [],
     "outputs": [
@@ -236,6 +273,19 @@ export const NFT_COLLECTION_ABI = [
   {
     "type": "function",
     "name": "isBaseURILocked",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "isPublicMintEnabled",
     "inputs": [],
     "outputs": [
       {
@@ -472,6 +522,19 @@ export const NFT_COLLECTION_ABI = [
         "name": "newBaseURI",
         "type": "string",
         "internalType": "string"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "setPublicMintEnabled",
+    "inputs": [
+      {
+        "name": "enabled",
+        "type": "bool",
+        "internalType": "bool"
       }
     ],
     "outputs": [],
@@ -1106,6 +1169,11 @@ export const NFT_COLLECTION_ABI = [
   },
   {
     "type": "error",
+    "name": "NFTCollection__BatchSizeTooLarge",
+    "inputs": []
+  },
+  {
+    "type": "error",
     "name": "NFTCollection__InvalidArrayLength",
     "inputs": []
   },
@@ -1137,6 +1205,11 @@ export const NFT_COLLECTION_ABI = [
   {
     "type": "error",
     "name": "NFTCollection__NotTokenOwner",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "NFTCollection__PublicMintDisabled",
     "inputs": []
   },
   {

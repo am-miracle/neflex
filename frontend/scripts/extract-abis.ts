@@ -40,7 +40,7 @@ class ABIExtractor {
 
   constructor() {
     // Update the path to point to the smart-contract/out directory
-    this.outDir = path.join(process.cwd(), '..', 'smart-contract', 'out');
+    this.outDir = path.join(process.cwd(), '..', 'smartcontract', 'out');
     this.constantsDir = path.join(process.cwd(), 'constants', 'abis');
     
     console.log('Looking for artifacts in:', this.outDir);

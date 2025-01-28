@@ -50,9 +50,13 @@ const MintNFTForm: React.FC<MintNFTFormProps> = ({collectionAddress}) => {
     const { data: isPublicMintEnabled } = useReadContract({
     address: collectionAddress as `0x${string}`,
     abi: NFT_COLLECTION_ABI,
-      // functionName: "isPublicMintEnabled",
-    functionName: "name",
-    
+      functionName: "isPublicMintEnabled",
+    });
+  
+  const { data: collectionOwner } = useReadContract({
+    address: collectionAddress as `0x${string}`,
+    abi: NFT_COLLECTION_ABI,
+    functionName: 'owner'
   });
 
   useEffect(() => {
@@ -194,7 +198,7 @@ const MintNFTForm: React.FC<MintNFTFormProps> = ({collectionAddress}) => {
     }
 
     // Check public minting status
-    if (!isPublicMintEnabled && address !== collectionAddress) {
+    if (!isPublicMintEnabled && address?.toLowerCase() !== collectionOwner?.toLowerCase()) {
       toast.error("Public minting is disabled for this collection");
       return;
     }

@@ -145,3 +145,22 @@ export const GET_CREATOR_NFTS = gql`
   }
 `
 
+export const GET_COLLECTIONS = gql`
+  query GetCollections($first: Int!, $skip: Int!) {
+    collectionCreateds(
+      first: $first
+      skip: $skip
+      orderBy: blockTimestamp
+      orderDirection: desc
+    ) {
+      id
+      name
+      symbol
+      baseTokenURI
+      maxSupply
+      creator
+      collectionAddress
+      blockTimestamp
+    }
+  }
+`

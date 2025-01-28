@@ -31,3 +31,14 @@ export interface NFTListing {
 export interface NFTListingsResponse {
   itemListeds: NFTListing[]
 }
+
+export interface CollectionCreated {
+  id: string;
+  name: string;
+  symbol?: string;
+  baseTokenURI: string;
+  maxSupply?: string;
+  creator: string;
+  collectionAddress?: string;
+  blockTimestamp?: string;
+}

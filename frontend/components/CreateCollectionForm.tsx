@@ -70,7 +70,7 @@ useEffect(() => {
         address: NFT_COLLECTION_FACTORY_ADDRESS as `0x${string}`,
         abi: NFT_COLLECTION_FACTORY_ABI,
         functionName: "createCollection",
-        args: [formData.name, formData.symbol, baseURI],
+        args: [formData.name, formData.symbol, baseURI, BigInt(100)],
       });
 
     } catch (error) {

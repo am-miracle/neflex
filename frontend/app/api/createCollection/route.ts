@@ -26,7 +26,7 @@ export async function POST(request: Request) {
       address: NFT_COLLECTION_FACTORY_ADDRESS as `0x${string}`,
       abi: NFT_COLLECTION_FACTORY_ABI,
       functionName: 'createCollection',
-      args: [name, symbol, baseURI],
+      args: [name, symbol, baseURI, BigInt(100)],
     });
 
     return NextResponse.json({

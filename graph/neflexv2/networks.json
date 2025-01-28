@@ -3,6 +3,12 @@
     "NFTCollection": {
       "address": "0x970D64256C4cA8f0B828183F4F83f8Fdc9831Cb7",
       "startBlock": 0
+    },
+    "NFTCollectionFactory": {
+      "address": "0xd27cb94d82e9550d135efa675cFE71B1B5abD234"
+    },
+    "NFTMarketplace": {
+      "address": "0x078665C74c9C0C00634Abda5B63dF03648a2ec3e"
     }
   }
 }

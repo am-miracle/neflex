@@ -33,10 +33,11 @@ const ListNFTForm: React.FC<ListNFTFormProps> = ({ tokenId, categories }) => {
     category: ''
   })
   const [isApproving, setIsApproving] = useState(false)
+  const [isListing, setIsListing] = useState(false)
   
   // Approval and listing hooks
   const { writeContract: writeNFTContract } = useWriteContract()
-  const { writeContract: writeMarketContract, data: listingHash } = useWriteContract()
+  const { writeContract: writeMarketContract, data: listingHash, isSuccess: isListingSuccess, isPending: isListingPending } = useWriteContract()
   const { isLoading: isApprovalLoading, isSuccess: isApprovalSuccess } = useWaitForTransactionReceipt({
     hash: listingHash
   })
@@ -54,7 +55,15 @@ const ListNFTForm: React.FC<ListNFTFormProps> = ({ tokenId, categories }) => {
       toast.success('Marketplace approval completed')
       setIsApproving(false)
     }
-  }, [isApprovalSuccess])
+  }, [isApprovalSuccess]);
+
+  useEffect(() => {
+    if (isListingSuccess) {
+      toast.success('NFT listing completed')
+      setIsListing(false)
+      router.push(`/nft/${tokenId.toString()}`)
+    }
+  }, [isListingSuccess, router, tokenId])
 
   const handleApprove = async () => {
     try {
@@ -94,11 +103,11 @@ const ListNFTForm: React.FC<ListNFTFormProps> = ({ tokenId, categories }) => {
           priceInWei,
           isAuction,
           categoryBytes,
+          BigInt(30)
         ],
         gas: BigInt(300000),
       })
 
-      router.push(`/nft/${tokenId.toString()}`)
     } catch (error) {
       console.error('Listing failed:', error)
       toast.error('Failed to list NFT')
@@ -190,9 +199,9 @@ const ListNFTForm: React.FC<ListNFTFormProps> = ({ tokenId, categories }) => {
       {/* Submit button */}
       <CustomButton
         type="submit"
-        title={isApprovalLoading ? 'Listing...' : 'List NFT'}
-        isLoading={isApprovalLoading}
-        isDisabled={!isApprovedForAll || !address}
+        title={isListing ? 'Listing...' : 'List NFT'}
+        isLoading={isListing || isListingPending}
+        isDisabled={!address}
         className="w-full bg-accent h-12"
       />
     </form>

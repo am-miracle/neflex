@@ -26,16 +26,14 @@ const MintPage = ({
     address: NFT_COLLECTION_FACTORY_ADDRESS as `0x${string}`,
     abi: NFT_COLLECTION_FACTORY_ABI,
     functionName: "getCreatorCollections",
-    args: [address as `0x${string}`],
+    args: [address as `0x${string}`]
   });
 
   // Fetch default collection from factory
   const { data: defaultCollection } = useReadContract({
     address: NFT_COLLECTION_FACTORY_ADDRESS as `0x${string}`,
     abi: NFT_COLLECTION_FACTORY_ABI,
-    // functionName: "defaultCollection",
-    functionName: "owner",
-
+    functionName: "defaultCollection",
   });
 
   return (
