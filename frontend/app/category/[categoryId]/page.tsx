@@ -5,13 +5,17 @@ import { Suspense } from "react";
 import { CategoryAdded } from '@/types';
 import { NFTListing, TokenMinted } from '@/types/nft';
 import NftGrid from '@/components/NftGrid';
+import { BytesLike } from 'ethers';
 
-export default async function CategoryPage({
-  params,
-}: {
-  params: { categoryId: string };
-}) {
-  const { categoryId } = await params;
+
+type PageProps =  {
+  params: {
+    categoryId: BytesLike;
+  };
+}
+
+const CategoryPage = async({ params }: PageProps) => {
+  const { categoryId } = params;
 
   // Fetch category data and NFTs in parallel
   const [categoryResponse, nftResponse] = await Promise.all([
@@ -57,7 +61,7 @@ export default async function CategoryPage({
             <Loader2 className="h-8 w-8 animate-spin" />
           </div>
         }>
-          {nftResponse.data.tokenMinteds > 0 ? (
+          {nftResponse.data.tokenMinteds.length > 0 ? (
             <NftGrid
               data={{
                 tokenMinteds: nftResponse.data.tokenMinteds.filter((nft: TokenMinted) => {
@@ -83,3 +87,5 @@ export default async function CategoryPage({
     </main>
   );
 }
+
+export default CategoryPage;
