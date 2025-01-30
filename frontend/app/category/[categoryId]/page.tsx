@@ -7,8 +7,12 @@ import { NFTListing, TokenMinted } from '@/types/nft';
 import NftGrid from '@/components/NftGrid';
 import { ethers } from 'ethers';
 
-const CategoryPage = async ({ params }: { params: { categoryId: string } })  => {
-  const categoryId = ethers.hexlify(params.categoryId);
+const CategoryPage = async (props: {
+  params: Promise<{ categoryId: string }>
+}) => {
+  // Await the params promise
+  const { categoryId: rawCategoryId } = await props.params;
+  const categoryId = ethers.hexlify(rawCategoryId);
 
   // Fetch category data and NFTs in parallel
   const [categoryResponse, nftResponse] = await Promise.all([
@@ -58,7 +62,6 @@ const CategoryPage = async ({ params }: { params: { categoryId: string } })  => 
             <NftGrid
               data={{
                 tokenMinteds: nftResponse.data.tokenMinteds.filter((nft: TokenMinted) => {
-                  // Find if this NFT has a listing in the current category
                   const hasListing = nftResponse.data.itemListeds.some(
                     (listing: NFTListing) =>
                       listing.tokenId === nft.tokenId &&
