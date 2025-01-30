@@ -15,7 +15,7 @@ type PageProps =  {
 }
 
 const CategoryPage = async({ params }: PageProps) => {
-  const { categoryId } = params;
+  const { categoryId } = await params;
 
   // Fetch category data and NFTs in parallel
   const [categoryResponse, nftResponse] = await Promise.all([
