@@ -1,17 +1,18 @@
 import ListingForm from '@/components/ListNFTForm'
 import { getClient } from '@/lib/apollo-client';
 import { GET_CATEGORIES } from '@/lib/queries';
+import { ethers } from 'ethers';
 import React from 'react'
 
-const ListPage = async ({ params }: { params: { tokenId: string } }) => {
+const ListPage = async (props: { params: Promise<{ tokenId: string }> }) => {
+  const { tokenId: rawTokenId } = await props.params;
+  const tokenId = ethers.hexlify(rawTokenId);
 
     const { data } = await getClient().query({
         query: GET_CATEGORIES,
     });
     const categories = data.categoryAddeds;
 
-  const { tokenId } = await params;
-    
   return (
     <main className="">
       <section className='max-w-[1050px] mx-auto'>

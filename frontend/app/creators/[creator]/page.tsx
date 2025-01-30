@@ -5,8 +5,8 @@ import React from 'react'
 const CreatorPage = async (props: {
   params: Promise<{ creatorId: string }>
 }) => {
-  const { creatorId: rawCategoryId } = await props.params;
-    const creatorId = ethers.hexlify(rawCategoryId);
+  const { creatorId: rawCreatorId } = await props.params;
+  const creatorId = ethers.hexlify(rawCreatorId);
   
   console.log(creatorId)
   return (
