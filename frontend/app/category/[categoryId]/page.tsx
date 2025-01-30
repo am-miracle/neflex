@@ -5,17 +5,17 @@ import { Suspense } from "react";
 import { CategoryAdded } from '@/types';
 import { NFTListing, TokenMinted } from '@/types/nft';
 import NftGrid from '@/components/NftGrid';
-import { BytesLike } from 'ethers';
+import { ethers } from 'ethers';
 
 
 type PageProps =  {
   params: {
-    categoryId: BytesLike;
+    categoryId: string;
   };
 }
 
 const CategoryPage = async({ params }: PageProps) => {
-  const { categoryId } = await params;
+  const categoryId = ethers.hexlify(await params.categoryId);
 
   // Fetch category data and NFTs in parallel
   const [categoryResponse, nftResponse] = await Promise.all([
