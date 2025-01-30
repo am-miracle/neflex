@@ -1,12 +1,12 @@
 import { UserNFTs } from '@/components/UserNFTs'
+import { ethers } from 'ethers';
 import React from 'react'
 
-const page = async ({
-  params,
-}: {
-  params: { creatorId: string };
-  }) => {
-  const { creatorId } = await params;
+const CreatorPage = async (props: {
+  params: Promise<{ creatorId: string }>
+}) => {
+  const { creatorId: rawCategoryId } = await props.params;
+    const creatorId = ethers.hexlify(rawCategoryId);
   
   console.log(creatorId)
   return (
@@ -16,4 +16,4 @@ const page = async ({
   )
 }
 
-export default page
+export default CreatorPage
