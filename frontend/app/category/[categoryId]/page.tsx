@@ -14,8 +14,8 @@ type PageProps =  {
   };
 }
 
-const CategoryPage = async({ params }: PageProps) => {
-  const categoryId = ethers.hexlify(await params.categoryId);
+const CategoryPage = async ({ params }: PageProps) => {
+  const categoryId = ethers.hexlify(params.categoryId);
 
   // Fetch category data and NFTs in parallel
   const [categoryResponse, nftResponse] = await Promise.all([
