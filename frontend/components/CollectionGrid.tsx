@@ -35,17 +35,19 @@ const CollectionGrid = ({data}: CollectionProps) => {
                             style={{width: "auto", height: "auto"}}
                         />
                     </div>
-                    <h1>{collection.name}</h1>
+                    <h1 className="text-2xl font-semibold mb-2 mt-6 truncate">{collection.name}</h1>
                     <div className='flex items-center'>
-                        <Image
-                            src={ownerImage}
-                            alt={"owner"}
-                            width={100}
-                            height={100}
-                            className="w-full h-full rounded-full mr-3 object-cover"
-                            style={{width: "auto", height: "auto"}}
-                        />
-                        <p>{collection.creator.slice(4,4)}</p>
+                        <div className="w-7 h-7">
+                            <Image
+                                src={ownerImage}
+                                alt={'creator'}
+                                width={100}
+                                height={100}
+                                className="w-full h-full rounded-full mr-3 object-cover"
+                                style={{width: "auto", height: "auto"}}
+                            />
+                        </div>
+                        <p>{collection.creator.slice(0,6)}</p>
                     </div>
                 </Link>
             )
