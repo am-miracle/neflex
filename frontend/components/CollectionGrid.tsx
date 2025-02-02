@@ -14,7 +14,7 @@ interface CollectionProps {
 const CollectionGrid = ({data}: CollectionProps) => {
 
   return (
-    <div className={`grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 md:py-20 lg:py-20`}>
+    <div className={`grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6`}>
         {data.collectionCreateds.map((collection: CollectionCreated) => {
 
             // You might want to replace this with an actual owner image or fallback

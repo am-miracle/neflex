@@ -3,19 +3,11 @@ import CustomButton from '../custom/CustomButton'
 import { Eye } from 'lucide-react'
 import Link from 'next/link'
 import { Suspense } from 'react'
-import { getClient } from '@/lib/apollo-client'
-import { GET_ALL_NFTS } from '@/lib/queries'
 import { LoadingGrid } from '../loading'
 import NftGrid from '../NftGrid'
 
 const DiscoverMore = async () => {
-  const { data } = await getClient().query({
-    query: GET_ALL_NFTS,
-    variables: {
-        first: 3,
-        skip: 0,
-    },
-  });
+
   return (
     <section className='px-8 py-10 md:px-11 lg:px-36 text-white my-10'>
       <div className='max-w-[1050px] mx-auto'>
@@ -36,7 +28,7 @@ const DiscoverMore = async () => {
         <div>
           <Suspense fallback={<LoadingGrid />}>
             <NftGrid
-              data={data}
+              // data={data}
               className='bg-secondary'
             />
           </Suspense>

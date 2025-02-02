@@ -1,4 +1,3 @@
-import { UserNFTs } from '@/components/UserNFTs'
 import { ethers } from 'ethers';
 import React from 'react'
 
@@ -11,7 +10,7 @@ const CreatorPage = async (props: {
   console.log(creatorId)
   return (
     <div>
-      <UserNFTs />
+      
     </div>
   )
 }
