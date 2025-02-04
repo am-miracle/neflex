@@ -15,7 +15,7 @@ export default async function CreatorPage() {
       </section>
       <hr className='border-primary mb-0' />
       <section className='mt-8 px-8 md:px-11 lg:px-36 xl:px-0'>
-      <Tabs defaultValue="nft" className="w-full">
+      <Tabs defaultValue="today" className="w-full">
         <TabsList className='w-full max-w-[1050px] mx-auto text-primary flex items-center justify-evenly pt-4 ease-in-out duration-300'>
           <TabsTrigger
             value="today"
@@ -56,7 +56,7 @@ export default async function CreatorPage() {
           <div className='max-w-[1050px] mx-auto'>
             <Suspense fallback={<LoadingGrid />}>
               <div className="text-center py-10">
-                  <h2 className="text-xl font-semibold">
+                  <h2 className="text-2xl xl:text-3xl font-semibold mb-3">
                     Top Creators this week
                 </h2>
               </div>
@@ -67,7 +67,7 @@ export default async function CreatorPage() {
           <div className='max-w-[1050px] mx-auto'>
             <Suspense fallback={<LoadingGrid />}>
               <div className="text-center py-10">
-                <h2 className="text-xl font-semibold">Top Creators this month</h2>
+                <h2 className="text-2xl xl:text-3xl font-semibold mb-3">Top Creators this month</h2>
               </div>
             </Suspense>
           </div>
@@ -76,7 +76,7 @@ export default async function CreatorPage() {
           <div className='max-w-[1050px] mx-auto'>
             <Suspense fallback={<LoadingGrid />}>
               <div className="text-center py-10">
-                <h2 className="text-xl font-semibold">Top Creators all time</h2>
+                <h2 className="text-2xl xl:text-3xl font-semibold mb-3">Top Creators all time</h2>
               </div>
             </Suspense>
           </div>

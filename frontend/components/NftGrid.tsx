@@ -1,11 +1,11 @@
 "use client"
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect } from 'react'
 // import Link from 'next/link'
 // import { formatEther } from 'viem'
 // import NftCard from './NftCard' // Adjust the import path as needed
 // import { NFTListing, TokenMinted } from '@/types/nft';
 // import PlaceHolder from "../assets/collectibles.svg"
-import { useAccount, useReadContract, useReadContracts } from 'wagmi'
+import { useReadContract, useReadContracts } from 'wagmi'
 import { NFT_COLLECTION_FACTORY_ABI, NFT_COLLECTION_FACTORY_ADDRESS } from '@/constants/abis/NFTCollectionFactory'
 import { NFT_COLLECTION_ABI } from '@/constants/abis/NFTCollection'
 // import { MARKETPLACE_ABI, MARKETPLACE_ADDRESS } from '@/constants/abis/NFTMarketplace'
@@ -34,8 +34,16 @@ interface NFT {
 
 const NftGrid = ({ className }: NFTGridProps) => {
   const [nfts, setNfts] = useState<NFT[]>([]);
-//   const [isLoading, setIsLoading] = useState(true);
-  const { address } = useAccount();
+
+  // Get all collection count
+  const { data: collectionCount } = useReadContract({
+    address: NFT_COLLECTION_FACTORY_ADDRESS as `0x${string}`,
+    abi: NFT_COLLECTION_FACTORY_ABI,
+    functionName: 'getCreatorCollectionCount',
+    args: [NFT_COLLECTION_FACTORY_ADDRESS as `0x${string}`], // Use factory address to get total count
+  });
+
+    console.log("collection count", collectionCount);
 
   // Get default collection
   const { data: defaultCollection } = useReadContract({
@@ -43,23 +51,29 @@ const NftGrid = ({ className }: NFTGridProps) => {
     abi: NFT_COLLECTION_FACTORY_ABI,
     functionName: 'getDefaultCollection',
   });
+    
+    console.log("default collection", defaultCollection);
 
-    console.log("default collection", defaultCollection)
+  // Create array of indices for fetching all collections
+  const indices = Array.from({ length: Number(collectionCount || 0) }, (_, i) => i);
 
-  // Get user collections
-  const { data: userCollections } = useReadContract({
-    address: NFT_COLLECTION_FACTORY_ADDRESS as `0x${string}`,
-    abi: NFT_COLLECTION_FACTORY_ABI,
-    functionName: 'getCreatorCollections',
-    args: [address as `0x${string}`],
+  // Get all collections using indices
+  const { data: collections } = useReadContracts({
+    contracts: indices.map(index => ({
+      address: NFT_COLLECTION_FACTORY_ADDRESS as `0x${string}`,
+      abi: NFT_COLLECTION_FACTORY_ABI,
+      functionName: 'getCreatorCollection',
+      args: [NFT_COLLECTION_FACTORY_ADDRESS, BigInt(index)],
+    })),
   });
-    console.log("user collections", userCollections)
+    
+    console.log("collections", collections);
 
-
-  // Combine all collections
-  const allCollections = useMemo(() => [
-    ...(defaultCollection ? [defaultCollection] : []),...(userCollections || [])
-  ], [defaultCollection, userCollections]);
+  // Combine default collection with all other collections and ensure string type
+  const allCollections = [
+    ...(defaultCollection ? [defaultCollection.toString()] : []),
+    ...(collections?.map(c => c.result?.toString() || '') || [])
+  ].filter(Boolean) as string[];
 
   // Get collection details (name and token count)
   const { data: collectionsData } = useReadContracts({
@@ -76,9 +90,8 @@ const NftGrid = ({ className }: NFTGridProps) => {
       }
     ]).flat(),
   });
-
-        console.log("collection data", collectionsData)
-
+    
+    console.log("collections data", collectionsData);
 
   // Prepare token data reading contracts
   const tokenDataContracts = allCollections.map((collection, i) => {
@@ -105,28 +118,32 @@ const NftGrid = ({ className }: NFTGridProps) => {
   const { data: tokenData } = useReadContracts({
     contracts: tokenDataContracts,
   });
+    
+    console.log("tokenData", tokenData);
 
-    console.log("tokenData", tokenData)
 
   // Fetch NFT metadata from IPFS
   const fetchIPFSMetadata = async (uri: string): Promise<NFTMetadata> => {
     try {
-      const hash = uri.replace('ipfs://', '');
-      const response = await fetch(`https://ipfs.io/ipfs/${hash}`);
+      const hash = uri.split('ipfs://').pop() as string;
+      const gatewayUrl = `https://ipfs.io/ipfs/${hash}`;
+      
+      const response = await fetch(gatewayUrl);
       const metadata = await response.json();
       
       if (metadata.image?.startsWith('ipfs://')) {
-        metadata.image = metadata.image.replace('ipfs://', 'https://ipfs.io/ipfs/');
+        const imageHash = metadata.image.replace('ipfs://', '');
+        metadata.image = `https://ipfs.io/ipfs/${imageHash}`;
       }
       
       return metadata;
     } catch (error) {
-        console.error('Error fetching IPFS metadata:', error);
-        return {
-            name: 'Unknown NFT',
-            description: 'Metadata unavailable',
-            image: '/placeholder.png',
-        }
+      console.error('Error fetching IPFS metadata:', error);
+      return {
+        name: 'Unknown NFT',
+        description: 'Metadata unavailable',
+        image: '/placeholder.png',
+      }
     }
   };
 
@@ -150,33 +167,35 @@ const NftGrid = ({ className }: NFTGridProps) => {
             tokenDataIndex += 2;
 
             if (tokenURI) {
-              const metadata = await fetchIPFSMetadata(tokenURI);
-              nftPromises.push(Promise.resolve({
-                id: `${collection}-${tokenId}`,
-                tokenId,
-                collection: collection,
-                collectionName: name,
-                metadata,
-                owner
-              }));
+              nftPromises.push((async () => {
+                const metadata = await fetchIPFSMetadata(tokenURI);
+                return {
+                  id: `${collection}-${tokenId}`,
+                  tokenId,
+                  collection,
+                  collectionName: name,
+                  metadata,
+                  owner
+                };
+              })());
+            } else {
+              nftPromises.push(Promise.resolve(null));
             }
           }
         }
 
         const fetchedNFTs = (await Promise.all(nftPromises)).filter((nft): nft is NFT => nft !== null);
-          setNfts(fetchedNFTs);
-          console.log("fetch nfts",fetchedNFTs)
+        console.log("All NFTs:", fetchedNFTs);
+        setNfts(fetchedNFTs);
       } catch (error) {
         console.error('Error fetching NFTs:', error);
-      } finally {
-        // setIsLoading(false);
       }
     };
 
     fetchAllNFTs();
   }, [allCollections, collectionsData, tokenData]);
     
-  console.log(nfts)
+    console.log("nfts", nfts)
 
     return (
         <div className={`grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 md:py-20 lg:py-20`}>

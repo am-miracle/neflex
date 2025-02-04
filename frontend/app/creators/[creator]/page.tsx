@@ -1,17 +1,15 @@
-import { ethers } from 'ethers';
-import React from 'react'
+import CreatorDetails from '@/components/CreatorDetails';
 
-const CreatorPage = async (props: {
-  params: Promise<{ creatorId: string }>
+const CreatorPage = async ({params}: {
+  params: Promise<{ creatorAddress: string }>
 }) => {
-  const { creatorId: rawCreatorId } = await props.params;
-  const creatorId = ethers.hexlify(rawCreatorId);
-  
-  console.log(creatorId)
+  const creatorAddress = (await params).creatorAddress
+  console.log("creator address", creatorAddress);
+
   return (
-    <div>
-      
-    </div>
+    <main>
+      <CreatorDetails />
+    </main>
   )
 }
 

@@ -3,6 +3,8 @@ import { CollectionCreated } from '@/types/nft';
 import Image from 'next/image';
 import Link from 'next/link';
 import React from 'react';
+import OwnerImage from "../assets/owner.svg"
+import { shortenAddress } from '@/lib';
 
 interface CollectionProps {
     data: {
@@ -15,19 +17,14 @@ const CollectionGrid = ({data}: CollectionProps) => {
 
   return (
     <div className={`grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6`}>
-        {data.collectionCreateds.map((collection: CollectionCreated) => {
-
-            // You might want to replace this with an actual owner image or fallback
-            const ownerImage = 'https://via.placeholder.com/100'
-
-            return (
-                <Link
-                    href={`/collection/${collection.collectionAddress}`}
-                    key={collection.id}
-                >
-                    <div className='rounded-[20px] overflow-hidden transform transition-all duration-300 hover:scale-95'>
-                        <Image
-                            src={collection.baseTokenURI}
+        {data.collectionCreateds.map((collection: CollectionCreated) => (
+            <Link
+                href={`/collection/${collection.collectionAddress}`}
+                key={collection.id}
+            >
+                <div className='rounded-[20px] overflow-hidden transform transition-all duration-300 hover:scale-95'>
+                    <Image
+                        src={collection.baseTokenURI}
                             alt={collection.name}
                             width={100}
                             height={100}
@@ -36,10 +33,10 @@ const CollectionGrid = ({data}: CollectionProps) => {
                         />
                     </div>
                     <h1 className="text-2xl font-semibold mb-2 mt-6 truncate">{collection.name}</h1>
-                    <div className='flex items-center'>
+                    <div className='flex items-center space-x-3 font-mono'>
                         <div className="w-7 h-7">
                             <Image
-                                src={ownerImage}
+                                src={OwnerImage}
                                 alt={'creator'}
                                 width={100}
                                 height={100}
@@ -47,11 +44,11 @@ const CollectionGrid = ({data}: CollectionProps) => {
                                 style={{width: "auto", height: "auto"}}
                             />
                         </div>
-                        <p>{collection.creator.slice(0,6)}</p>
+                        <p>{shortenAddress(collection.creator)}</p>
                     </div>
                 </Link>
             )
-        })}
+        )}
     </div>
   )
 }
