@@ -3,15 +3,15 @@ import { GET_CATEGORIES, GET_NFTS_BY_CATEGORY } from '@/lib/queries';
 import { Loader2 } from "lucide-react";
 import { Suspense } from "react";
 import { CategoryAdded } from '@/types';
-import { NFTListing, TokenMinted } from '@/types/nft';
-import NftGrid from '@/components/NftGrid';
+// import { NFTListing, TokenMinted } from '@/types/nft';
+// import NftGrid from '@/components/NftGrid';
 import { ethers } from 'ethers';
 
-const CategoryPage = async (props: {
+const CategoryPage = async ({params}: {
   params: Promise<{ categoryId: string }>
 }) => {
   // Await the params promise
-  const { categoryId: rawCategoryId } = await props.params;
+  const rawCategoryId = (await params).categoryId;
   const categoryId = ethers.hexlify(rawCategoryId);
 
   // Fetch category data and NFTs in parallel
@@ -59,19 +59,23 @@ const CategoryPage = async (props: {
           </div>
         }>
           {nftResponse.data.tokenMinteds.length > 0 ? (
-            <NftGrid
-              data={{
-                tokenMinteds: nftResponse.data.tokenMinteds.filter((nft: TokenMinted) => {
-                  const hasListing = nftResponse.data.itemListeds.some(
-                    (listing: NFTListing) =>
-                      listing.tokenId === nft.tokenId &&
-                      listing.category === categoryId
-                  );
-                  return hasListing;
-                }),
-                itemListeds: nftResponse.data.itemListeds
-              }}
-            />
+            // <NftGrid
+            //   data={{
+            //     tokenMinteds: nftResponse.data.tokenMinteds.filter((nft: TokenMinted) => {
+            //       const hasListing = nftResponse.data.itemListeds.some(
+            //         (listing: NFTListing) =>
+            //           listing.tokenId === nft.tokenId &&
+            //           listing.category === categoryId
+            //       );
+            //       return hasListing;
+            //     }),
+            //     itemListeds: nftResponse.data.itemListeds
+            //   }}
+            // />
+            <div className="text-center py-10">
+              <h2 className="text-xl font-semibold">No NFTs found in this category</h2>
+              <p className="text-gray-500">Check back later for new listings</p>
+            </div>
           ) : (
             <div className="text-center py-10">
               <h2 className="text-xl font-semibold">No NFTs found in this category</h2>

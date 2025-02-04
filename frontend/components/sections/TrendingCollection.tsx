@@ -23,6 +23,8 @@ const TrendingCollection = async () => {
           <Suspense fallback={<p>Loading ..</p>}>
             <CollectionGrid
               data={data}
+              itemsPerPage={3}
+              showPagination={false}
             />
           </Suspense>
         </div>

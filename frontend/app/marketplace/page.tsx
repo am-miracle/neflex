@@ -3,9 +3,19 @@ import { Suspense } from 'react';
 import SearchNft from './SearchNft';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import NftGrid from '@/components/NftGrid';
+import { GET_COLLECTIONS } from '@/lib/queries';
+import { getClient } from '@/lib/apollo-client';
+import CollectionGrid from '@/components/CollectionGrid';
 
 
-  export default async function MarketplacePage() {
+export default async function MarketplacePage() {
+  const { data } = await getClient().query({
+    query: GET_COLLECTIONS,
+    variables: {
+      first: 12,
+      skip: 0,
+    },
+  });
 
   return (
     <main className="">
@@ -45,10 +55,19 @@ import NftGrid from '@/components/NftGrid';
         <TabsContent value="collection" className='bg-secondary h-full border-b border-background'>
           <div className='max-w-[1050px] mx-auto'>
             <Suspense fallback={<LoadingGrid />}>
-              <div className="text-center py-10">
-                <h2 className="text-xl font-semibold">No Collection found</h2>
-                <p className="text-gray-500">Check back later for new collection</p>
-              </div>
+                {data.length === 0 ? (
+                  <div className="text-center py-10">
+                    <h2 className="text-xl font-semibold">No Collection found</h2>
+                    <p className="text-gray-500">Check back later for new collection</p>
+                  </div>
+                ): (
+                    <CollectionGrid
+                      data={data}
+                      itemsPerPage={12}
+                      showPagination={true}
+                      className='bg-background'
+                  />
+                )}
             </Suspense>
           </div>
         </TabsContent>
