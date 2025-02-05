@@ -1,12 +1,12 @@
 import ListingForm from '@/components/ListNFTForm'
 import { getClient } from '@/lib/apollo-client';
 import { GET_CATEGORIES } from '@/lib/queries';
-import { ethers } from 'ethers';
 import React from 'react'
 
-const ListPage = async (props: { params: Promise<{ tokenId: string }> }) => {
-  const { tokenId: rawTokenId } = await props.params;
-  const tokenId = ethers.hexlify(rawTokenId);
+const ListPage = async ({params}: { params: Promise<{ tokenId: string, collectionAddress: string }> }) => {
+  const rawTokenId = (await params).tokenId;
+  const collectionAddress = (await params).collectionAddress
+  const tokenId = BigInt(rawTokenId);
 
     const { data } = await getClient().query({
         query: GET_CATEGORIES,
@@ -24,8 +24,9 @@ const ListPage = async (props: { params: Promise<{ tokenId: string }> }) => {
       <hr className='border-primary mb-0' />
       <section className='my-10 px-8 md:px-11 lg:px-36 xl:px-0 w-full max-w-[1050px] mx-auto text-primary pt-4 ease-in-out duration-300'>
         <ListingForm
-            tokenId={BigInt(tokenId)}
-            categories={categories || []}
+          tokenId={BigInt(tokenId)}
+          categories={categories || []}
+          collectionAddress={collectionAddress as `0x${string}`}
         />
       </section>
     </main>

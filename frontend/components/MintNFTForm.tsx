@@ -47,10 +47,11 @@ const MintNFTForm: React.FC<MintNFTFormProps> = ({collectionAddress}) => {
   const { writeContract, data: hash, error: writeError } = useWriteContract();
   const { isLoading: isMinting, isSuccess: isMinted, data: receipt } =
     useWaitForTransactionReceipt({ hash });
+  
     const { data: isPublicMintEnabled } = useReadContract({
-    address: collectionAddress as `0x${string}`,
-    abi: NFT_COLLECTION_ABI,
-      functionName: "isPublicMintEnabled",
+      address: collectionAddress as `0x${string}`,
+      abi: NFT_COLLECTION_ABI,
+        functionName: "isPublicMintEnabled",
     });
   
   const { data: collectionOwner } = useReadContract({
@@ -82,11 +83,11 @@ const MintNFTForm: React.FC<MintNFTFormProps> = ({collectionAddress}) => {
       if (isMinted && !isBatchMode) {
         const tokenId = extractTokenIdFromReceipt(receipt);
         if (tokenId) {
-          router.push(`/list/${tokenId}`);
+          router.push(`/list/${collectionAddress}/${tokenId}`);
         }
       }
     }
-  }, [isMinted, receipt, router, isBatchMode]);
+  }, [isMinted, receipt, router, isBatchMode, collectionAddress]);
 
   const uploadToPinata = async (file: File) => {
     try {

@@ -25,6 +25,7 @@ interface NFT {
   collectionName: string;
   metadata: NFTMetadata;
   owner: string;
+  listing?: string;
 }
 
 
@@ -182,7 +183,7 @@ const UserNfts = ({ className }: NFTGridProps) => {
 
                     return (
                     <Link
-                        href={`/nft/${nft.tokenId}`}
+                        href={`/nft/${nft.collection}/${nft.tokenId}`}
                         key={nft.id}
                     >
                         <NftCard

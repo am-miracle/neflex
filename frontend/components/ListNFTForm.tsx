@@ -8,29 +8,32 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import toast from 'react-hot-toast'
 import { parseEther } from 'viem'
-import { NFT_COLLECTION_ABI, NFT_COLLECTION_ADDRESS } from '@/constants/abis/NFTCollection'
+import { NFT_COLLECTION_ABI } from '@/constants/abis/NFTCollection'
 import { MARKETPLACE_ABI, MARKETPLACE_ADDRESS } from '@/constants/abis/NFTMarketplace'
 import CustomButton from './custom/CustomButton'
 import { CategoryAdded } from '@/types'
 
 interface ListNFTFormProps {
   tokenId: bigint;
-  categories: CategoryAdded[]
+  categories: CategoryAdded[];
+  collectionAddress: `0x${string}`
 }
 
 interface ListingFormData {
-  listingType: 'fixed' | 'auction'
-  price: string
-  category: string
+  listingType: 'fixed' | 'auction';
+  price: string;
+  category: string;
+  duration: string;
 }
 
-const ListNFTForm: React.FC<ListNFTFormProps> = ({ tokenId, categories }) => {
+const ListNFTForm: React.FC<ListNFTFormProps> = ({ tokenId, categories, collectionAddress }) => {
   const router = useRouter()
   const { address } = useAccount()
   const [formData, setFormData] = useState<ListingFormData>({
     listingType: 'fixed',
     price: '',
-    category: ''
+    category: '',
+    duration: "86400"
   })
   const [isApproving, setIsApproving] = useState(false)
   const [isListing, setIsListing] = useState(false)
@@ -44,7 +47,7 @@ const ListNFTForm: React.FC<ListNFTFormProps> = ({ tokenId, categories }) => {
 
   // Approval status check
   const { data: isApprovedForAll } = useReadContract({
-    address: NFT_COLLECTION_ADDRESS as `0x${string}`,
+    address: collectionAddress as `0x${string}`,
     abi: NFT_COLLECTION_ABI,
     functionName: 'isApprovedForAll',
     args: [address as `0x${string}`, MARKETPLACE_ADDRESS as `0x${string}`]
@@ -69,7 +72,7 @@ const ListNFTForm: React.FC<ListNFTFormProps> = ({ tokenId, categories }) => {
     try {
       setIsApproving(true)
       await writeNFTContract({
-        address: NFT_COLLECTION_ADDRESS as `0x${string}`,
+        address: collectionAddress as `0x${string}`,
         abi: NFT_COLLECTION_ABI,
         functionName: 'setApprovalForAll',
         args: [MARKETPLACE_ADDRESS as `0x${string}`, true],
@@ -91,21 +94,21 @@ const ListNFTForm: React.FC<ListNFTFormProps> = ({ tokenId, categories }) => {
     try {
       const priceInWei = parseEther(formData.price)
       const categoryBytes = formData.category.padEnd(66, '0') as `0x${string}`
-      const isAuction = formData.listingType === 'auction'
+      const isAuction = formData.listingType === 'auction';
+      const auctionDuration = isAuction ? BigInt(formData.duration) : BigInt(0);
 
       await writeMarketContract({
         address: MARKETPLACE_ADDRESS as `0x${string}`,
         abi: MARKETPLACE_ABI,
         functionName: 'listItem',
         args: [
-          NFT_COLLECTION_ADDRESS as `0x${string}`,
+          collectionAddress as `0x${string}`,
           tokenId,
           priceInWei,
           isAuction,
           categoryBytes,
-          BigInt(30)
+          auctionDuration
         ],
-        gas: BigInt(300000),
       })
 
     } catch (error) {
@@ -142,6 +145,31 @@ const ListNFTForm: React.FC<ListNFTFormProps> = ({ tokenId, categories }) => {
           </div>
         </RadioGroup>
       </div>
+      {formData.listingType === 'auction' && (
+        <div className="space-y-2">
+          <Label>Duration</Label>
+          <Select
+            value={formData.duration}
+            onValueChange={(value) => handleFormChange('duration', value)}
+            required
+          >
+            <SelectTrigger
+              className="bg-white rounded-[20px] h-12 text-base text-background w-full"
+            >
+              <SelectValue placeholder="Select duration" />
+            </SelectTrigger>
+            <SelectContent
+              className="bg-white rounded-[20px] text-base text-background active:text-white w-full"
+            >
+              <SelectItem value="3600">1 Hour</SelectItem>
+              <SelectItem value="86400">24 Hours</SelectItem>
+              <SelectItem value="172800">48 Hours</SelectItem>
+              <SelectItem value="604800">7 Days</SelectItem>
+              <SelectItem value="2592000">30 Days</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      )}
 
       {/* Price Input */}
       <div className="space-y-2">

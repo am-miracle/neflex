@@ -164,3 +164,32 @@ export const GET_COLLECTIONS = gql`
     }
   }
 `
+export const GET_ALL_COLLECTIONS = gql`
+  query GetCollections {
+    collectionCreateds {
+      id
+      name
+      symbol
+      baseTokenURI
+      maxSupply
+      creator
+      collectionAddress
+      blockTimestamp
+    }
+  }
+`
+export const GET_COLLECTION_BY_ID = gql`
+  query GetCollectionById($id: String!) {
+    collectionCreated(id: $id) {
+      id
+      maxSupply
+      creator
+      collectionAddress
+      blockTimestamp
+      baseTokenURI
+      blockNumber
+      name
+      symbol
+    }
+  }
+`
