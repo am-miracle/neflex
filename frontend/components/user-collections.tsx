@@ -8,15 +8,8 @@ import Link from 'next/link'
 import Image from 'next/image'
 import OwnerImage from "../assets/owner.svg"
 import { shortenAddress } from '@/lib'
+import { Collection } from '@/types'
 
-interface Collection {
-  address: string
-  name: string
-  symbol: string
-  baseTokenURI: string
-  maxSupply: bigint
-  tokenCount: bigint
-}
 
 interface UserCollectionsProps {
   userAddress: string

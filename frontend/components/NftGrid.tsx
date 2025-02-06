@@ -8,27 +8,13 @@ import React, { useState, useEffect } from 'react'
 import { useReadContract, useReadContracts } from 'wagmi'
 import { NFT_COLLECTION_FACTORY_ABI, NFT_COLLECTION_FACTORY_ADDRESS } from '@/constants/abis/NFTCollectionFactory'
 import { NFT_COLLECTION_ABI } from '@/constants/abis/NFTCollection'
+import { NFT, NFTMetadata } from '@/types'
 // import { MARKETPLACE_ABI, MARKETPLACE_ADDRESS } from '@/constants/abis/NFTMarketplace'
 
 interface NFTGridProps {
     className?: string
 }
 
-interface NFTMetadata {
-  name: string;
-  description: string;
-  image: string;
-  attributes?: Record<string, string>;
-}
-
-interface NFT {
-  id: string;
-  tokenId: number;
-  collection: string;
-  collectionName: string;
-  metadata: NFTMetadata;
-  owner: string;
-}
 
 
 

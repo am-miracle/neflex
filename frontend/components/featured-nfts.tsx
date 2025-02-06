@@ -7,7 +7,6 @@ import NftCard from './NftCard'
 import Owner from "../assets/owner.svg"
 import { getClient } from '@/lib/apollo-client'
 import { GET_ALL_COLLECTIONS } from '@/lib/queries'
-import { NFT, NFTMetadata } from '@/types'
 
 interface NFTGridProps {
     className?: string;
@@ -24,8 +23,23 @@ interface Collection {
   blockTimestamp: string;
 }
 
+interface NFTMetadata {
+  name: string;
+  description: string;
+  image: string;
+  attributes?: Record<string, string>;
+}
 
-const AllNfts = ({ className }: NFTGridProps) => {
+interface NFT {
+  id: string;
+  tokenId: number;
+  collection: string;
+  collectionName: string;
+  metadata: NFTMetadata;
+  owner: string;
+}
+
+const FeaturedNFTs = ({ className }: NFTGridProps) => {
   const [nfts, setNfts] = useState<NFT[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [collections, setCollections] = useState<Collection[]>([]);
@@ -154,7 +168,7 @@ const AllNfts = ({ className }: NFTGridProps) => {
 
         const fetchedNFTs = (await Promise.all(nftPromises)).filter((nft): nft is NFT => nft !== null);
         console.log("Fetched NFTs:", fetchedNFTs);
-        setNfts(fetchedNFTs);
+        setNfts(fetchedNFTs.slice(0, 3));
       } catch (error) {
         console.error('Error fetching NFTs:', error);
       } finally {
@@ -203,4 +217,4 @@ const AllNfts = ({ className }: NFTGridProps) => {
   );
 }
 
-export default AllNfts
+export default FeaturedNFTs

@@ -1,3 +1,5 @@
+import toast from "react-hot-toast";
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   export const extractTokenIdFromReceipt = (receipt: any): string | null => {
     // Implement logic to extract the tokenId from the transaction receipt
@@ -16,4 +18,10 @@
 export const shortenAddress = (address: string | undefined) => {
     if(!address) return "connect wallet";
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
+};
+
+export const copyAddress = (address: string | undefined) => {
+    if (!address) return "connect wallet";
+    navigator.clipboard.writeText(address);
+    toast.success("Address copied");
 };

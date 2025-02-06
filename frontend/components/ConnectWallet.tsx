@@ -13,10 +13,9 @@ import { useState } from 'react';
 import { SUPPORTED_NETWORK } from '@/lib/providers';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
 import CustomButton from './custom/CustomButton';
+import { shortenAddress } from '@/lib';
 
-const shortenAddress = (address: string) => {
-  return `${address.slice(0, 6)}...${address.slice(-4)}`;
-};
+
 const MESSAGE_TO_SIGN = "Welcome to NEFLEX an NFT Marketplace! Click to sign in and accept the Terms of Service.";
 
 export function ConnectedWallet() {

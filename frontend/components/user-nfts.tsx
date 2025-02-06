@@ -6,28 +6,11 @@ import { NFT_COLLECTION_ABI } from '@/constants/abis/NFTCollection'
 import Link from 'next/link'
 import NftCard from './NftCard'
 import Owner from "../assets/owner.svg"
+import { NFT, NFTMetadata } from '@/types'
 
 interface NFTGridProps {
     className?: string;
 }
-
-interface NFTMetadata {
-  name: string;
-  description: string;
-  image: string;
-  attributes?: Record<string, string>;
-}
-
-interface NFT {
-  id: string;
-  tokenId: number;
-  collection: string;
-  collectionName: string;
-  metadata: NFTMetadata;
-  owner: string;
-  listing?: string;
-}
-
 
 
 const UserNfts = ({ className }: NFTGridProps) => {

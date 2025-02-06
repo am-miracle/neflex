@@ -1,16 +1,3 @@
-export interface TokenMinted {
-  id: string
-  to: string
-  tokenId: string
-  tokenURI: string
-  royaltyFee: string
-  blockTimestamp: string
-  transactionHash: string
-}
-
-export interface TokenMintedResponse {
-  tokenMinteds: TokenMinted[]
-}
 
 export interface NFTListing {
   id: string
@@ -26,10 +13,6 @@ export interface NFTListing {
   auctionEndTime?: string;
   highestBidder?: string;
   highestBid?: string;
-}
-
-export interface NFTListingsResponse {
-  itemListeds: NFTListing[]
 }
 
 export interface CollectionCreated {

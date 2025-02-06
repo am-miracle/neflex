@@ -11,13 +11,8 @@ import CustomButton from './custom/CustomButton';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { extractTokenIdFromReceipt } from '@/lib';
+import { NFTMetadata } from '@/types';
 
-interface NFTMetadata {
-  name: string
-  description: string
-  image: string
-  attributes: Record<string, string>
-}
 
 interface SingleNFT {
   file: File | null

@@ -3,7 +3,6 @@ import React, { Suspense } from 'react'
 import Image from 'next/image';
 import Cover from "../assets/cover.svg"
 import UserImage from "../assets/creator.svg"
-import toast from 'react-hot-toast';
 import { useAccount, useEnsName, useReadContract } from 'wagmi';
 import CustomButton from './custom/CustomButton';
 import { Copy, Plus } from 'lucide-react';
@@ -16,17 +15,8 @@ import { LoadingGrid } from './loading';
 import UserNfts from './user-nfts';
 import { NFT_COLLECTION_FACTORY_ABI, NFT_COLLECTION_FACTORY_ADDRESS } from '@/constants/abis/NFTCollectionFactory';
 import { UserCollections } from './user-collections';
+import { copyAddress, shortenAddress } from '@/lib';
 
-const shortenAddress = (address: string | undefined) => {
-    if(!address) return "connect wallet";
-  return `${address.slice(0, 6)}...${address.slice(-4)}`;
-};
-
-const copyAddress = (address: string | undefined) => {
-    if (!address) return "connect wallet";
-    navigator.clipboard.writeText(address);
-    toast.success("Address copied");
-};
 
 // interface CreatorDetailsProps {
 //     creatorAddress: `0x${string}`;
