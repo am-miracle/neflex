@@ -1,5 +1,6 @@
 import React from 'react';
 import Image from 'next/image';
+import { shortenAddress } from '@/lib';
 
 interface NftProps {
     name: string;
@@ -57,7 +58,7 @@ const NftCard = ({
             ): (
                     <div className="w-7 h-7 rounded-full mr-3 bg-gray-300">{ name[0] }</div>
             )}
-            <p className="font-medium font-mono truncate text-base max-w-[200px]">{owner}</p>
+            <p className="font-medium font-mono truncate text-base max-w-[200px]">{shortenAddress(owner)}</p>
         </div>
 
         {/* Price and Bid Information */}

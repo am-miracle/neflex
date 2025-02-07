@@ -4,7 +4,7 @@ import { Eye } from 'lucide-react'
 import Link from 'next/link'
 import { Suspense } from 'react'
 import { LoadingGrid } from '../loading'
-import NftGrid from '../NftGrid'
+import FeaturedNFTs from '../featured-nfts'
 
 const DiscoverMore = async () => {
 
@@ -27,10 +27,7 @@ const DiscoverMore = async () => {
         </div>
         <div>
           <Suspense fallback={<LoadingGrid />}>
-            <NftGrid
-              // data={data}
-              className='bg-secondary'
-            />
+            <FeaturedNFTs className='bg-secondary'/>
           </Suspense>
         </div>
         <Link href={"/marketplace"} className='block md:hidden'>

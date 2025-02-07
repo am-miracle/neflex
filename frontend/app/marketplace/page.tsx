@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { GET_COLLECTIONS } from '@/lib/queries';
 import { getClient } from '@/lib/apollo-client';
 import CollectionGrid from '@/components/CollectionGrid';
-import AllNfts from '@/components/all-nfts';
+import NftGrid from '@/components/NftGrid';
 
 
 export default async function MarketplacePage() {
@@ -46,7 +46,7 @@ export default async function MarketplacePage() {
         <TabsContent value="nft" className='bg-secondary h-full border-b border-background'>
           <div className='max-w-[1050px] mx-auto px-8 md:px-11 lg:px-36 xl:px-0 py-20 md:py-0'>
               <Suspense fallback={<LoadingGrid />}>
-                <AllNfts />
+                <NftGrid />
             </Suspense>
           </div>
         </TabsContent>

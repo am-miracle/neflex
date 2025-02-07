@@ -7,6 +7,7 @@ import NftCard from './NftCard'
 import Owner from "../assets/owner.svg"
 import { getClient } from '@/lib/apollo-client'
 import { GET_ALL_COLLECTIONS } from '@/lib/queries'
+import { NFT, NFTMetadata } from '@/types'
 
 interface NFTGridProps {
     className?: string;
@@ -23,21 +24,6 @@ interface Collection {
   blockTimestamp: string;
 }
 
-interface NFTMetadata {
-  name: string;
-  description: string;
-  image: string;
-  attributes?: Record<string, string>;
-}
-
-interface NFT {
-  id: string;
-  tokenId: number;
-  collection: string;
-  collectionName: string;
-  metadata: NFTMetadata;
-  owner: string;
-}
 
 const FeaturedNFTs = ({ className }: NFTGridProps) => {
   const [nfts, setNfts] = useState<NFT[]>([]);
@@ -70,7 +56,6 @@ const FeaturedNFTs = ({ className }: NFTGridProps) => {
     })),
   });
 
-  console.log("Collections data:", collectionsData);
 
   // Prepare token data reading contracts
   const tokenDataContracts = useMemo(() => {
@@ -188,7 +173,7 @@ const FeaturedNFTs = ({ className }: NFTGridProps) => {
   }
 
   return (
-    <div className={`grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 md:py-20 lg:py-20 ${className}`}>
+    <div className={`grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 md:py-20 lg:py-20`}>
       {nfts.map((nft) => {
         const metadata = nft.metadata;
         const imageUrl = metadata?.image;
