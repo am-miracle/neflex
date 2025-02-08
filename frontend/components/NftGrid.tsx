@@ -57,7 +57,6 @@ const NftGrid = ({ className }: NFTGridProps) => {
         const { data } = await getClient().query({
           query: GET_ALL_COLLECTIONS,
         });
-        console.log("Found collections:", data.collectionCreateds);
         setCollections(data.collectionCreateds);
       } catch (error) {
         console.error("Error fetching collections:", error);
@@ -76,7 +75,6 @@ const NftGrid = ({ className }: NFTGridProps) => {
     })),
   });
 
-  console.log("Collections data:", collectionsData);
 
   // Prepare token data reading contracts
   const tokenDataContracts = useMemo(() => {
@@ -92,12 +90,12 @@ const NftGrid = ({ className }: NFTGridProps) => {
           functionName: 'tokenURI',
           args: [BigInt(tokenId)],
         },
-        {
-          address: collection.collectionAddress as `0x${string}`,
-          abi: NFT_COLLECTION_ABI,
-          functionName: 'ownerOf',
-          args: [BigInt(tokenId)],
-        },
+        // {
+        //   address: collection.collectionAddress as `0x${string}`,
+        //   abi: NFT_COLLECTION_ABI,
+        //   functionName: 'ownerOf',
+        //   args: [BigInt(tokenId)],
+        // },
       ]).flat();
     }).flat();
   }, [collections, collectionsData]);
@@ -107,7 +105,6 @@ const NftGrid = ({ className }: NFTGridProps) => {
     contracts: tokenDataContracts,
   });
 
-  console.log("Token data:", tokenData);
 
   // Fetch NFT metadata from IPFS
   const fetchIPFSMetadata = async (uri: string): Promise<NFTMetadata> => {
@@ -173,7 +170,6 @@ const NftGrid = ({ className }: NFTGridProps) => {
         }
 
         const fetchedNFTs = (await Promise.all(nftPromises)).filter((nft): nft is NFT => nft !== null);
-        console.log("Fetched NFTs:", fetchedNFTs);
         setNfts(fetchedNFTs);
       } catch (error) {
         console.error('Error fetching NFTs:', error);
@@ -198,7 +194,7 @@ const NftGrid = ({ className }: NFTGridProps) => {
 
     return (
     <div className="space-y-6">
-      <div className={`grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 md:py-20 lg:py-20`}>
+      <div className={`grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 md:py-20 lg:py-20`}>
         {currentNFTs.map((nft) => (
           <Link
             href={`/nft/${nft.collection}/${nft.tokenId}`}
