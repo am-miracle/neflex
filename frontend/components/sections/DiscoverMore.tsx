@@ -12,7 +12,7 @@ const DiscoverMore = async () => {
     <section className='px-8 py-10 md:px-11 lg:px-36 text-white my-10'>
       <div className='max-w-[1050px] mx-auto'>
         <div className='flex items-center justify-between'>
-          <div className='grid gap-2'>
+          <div className='grid gap-2 mb-7 md:mb-0'>
             <h1 className='text-4xl font-bold'>Discover More NFTs</h1>
             <p>Explore new trending NFTs</p>
           </div>
@@ -30,7 +30,7 @@ const DiscoverMore = async () => {
             <FeaturedNFTs className='bg-secondary'/>
           </Suspense>
         </div>
-        <Link href={"/marketplace"} className='block md:hidden'>
+        <Link href={"/marketplace"} className='block md:hidden mt-7 md:mt-0'>
           <CustomButton
             type='button'
             title='See All'

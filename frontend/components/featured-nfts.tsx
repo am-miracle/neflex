@@ -1,6 +1,7 @@
 "use client"
-import React, { useState, useEffect, useMemo } from 'react'
-import { useReadContracts } from 'wagmi'
+import React, { useState, useEffect } from 'react'
+import { createPublicClient, http } from 'viem'
+import { sepolia } from 'viem/chains'
 import { NFT_COLLECTION_ABI } from '@/constants/abis/NFTCollection'
 import Link from 'next/link'
 import NftCard from './NftCard'
@@ -24,6 +25,11 @@ interface Collection {
   blockTimestamp: string;
 }
 
+// Create a public client
+const publicClient = createPublicClient({
+  chain: sepolia,
+  transport: http()
+})
 
 const FeaturedNFTs = ({ className }: NFTGridProps) => {
   const [nfts, setNfts] = useState<NFT[]>([]);
@@ -37,7 +43,6 @@ const FeaturedNFTs = ({ className }: NFTGridProps) => {
         const { data } = await getClient().query({
           query: GET_ALL_COLLECTIONS,
         });
-        console.log("Found collections:", data.collectionCreateds);
         setCollections(data.collectionCreateds);
       } catch (error) {
         console.error("Error fetching collections:", error);
@@ -46,47 +51,6 @@ const FeaturedNFTs = ({ className }: NFTGridProps) => {
 
     fetchCollections();
   }, []);
-
-  // Get collection details (token count)
-  const { data: collectionsData } = useReadContracts({
-    contracts: collections.map(collection => ({
-      address: collection.collectionAddress as `0x${string}`,
-      abi: NFT_COLLECTION_ABI,
-      functionName: 'getTokenCount',
-    })),
-  });
-
-
-  // Prepare token data reading contracts
-  const tokenDataContracts = useMemo(() => {
-    if (!collectionsData) return [];
-
-    return collections.map((collection, i) => {
-      const tokenCount = Number(collectionsData[i]?.result || 0);
-      
-      return Array.from({ length: tokenCount }, (_, tokenId) => [
-        {
-          address: collection.collectionAddress as `0x${string}`,
-          abi: NFT_COLLECTION_ABI,
-          functionName: 'tokenURI',
-          args: [BigInt(tokenId)],
-        },
-        {
-          address: collection.collectionAddress as `0x${string}`,
-          abi: NFT_COLLECTION_ABI,
-          functionName: 'ownerOf',
-          args: [BigInt(tokenId)],
-        },
-      ]).flat();
-    }).flat();
-  }, [collections, collectionsData]);
-
-  // Read all token data at once
-  const { data: tokenData } = useReadContracts({
-    contracts: tokenDataContracts,
-  });
-
-  console.log("Token data:", tokenData);
 
   // Fetch NFT metadata from IPFS
   const fetchIPFSMetadata = async (uri: string): Promise<NFTMetadata> => {
@@ -113,47 +77,78 @@ const FeaturedNFTs = ({ className }: NFTGridProps) => {
     }
   };
 
+  // Fetch NFTs using public client
   useEffect(() => {
-    const fetchAllNFTs = async () => {
-      if (!collectionsData || !tokenData || collections.length === 0) {
+    const fetchNFTs = async () => {
+      if (collections.length === 0) {
         setIsLoading(false);
         return;
       }
-      
-      setIsLoading(true);
 
       try {
         const nftPromises: Promise<NFT | null>[] = [];
-        let tokenDataIndex = 0;
 
-        for (let i = 0; i < collections.length; i++) {
-          const collection = collections[i];
-          const tokenCount = Number(collectionsData[i]?.result || 0);
+        for (const collection of collections) {
+          try {
+            // Get token count
+            const tokenCount = await publicClient.readContract({
+              address: collection.collectionAddress as `0x${string}`,
+              abi: NFT_COLLECTION_ABI,
+              functionName: 'getTokenCount',
+            }) as bigint;
 
-          for (let tokenId = 0; tokenId < tokenCount; tokenId++) {
-            const tokenURI = tokenData[tokenDataIndex]?.result as string;
-            const owner = tokenData[tokenDataIndex + 1]?.result as string;
-            tokenDataIndex += 2;
+            // Fetch data for each token
+            for (let tokenId = 0; tokenId < Number(tokenCount); tokenId++) {
+              const fetchTokenData = async (): Promise<NFT | null> => {
+                try {
+                  const [tokenURIResult, ownerResult] = await Promise.all([
+                    publicClient.readContract({
+                      address: collection.collectionAddress as `0x${string}`,
+                      abi: NFT_COLLECTION_ABI,
+                      functionName: 'tokenURI',
+                      args: [BigInt(tokenId)],
+                    }),
+                    publicClient.readContract({
+                      address: collection.collectionAddress as `0x${string}`,
+                      abi: NFT_COLLECTION_ABI,
+                      functionName: 'ownerOf',
+                      args: [BigInt(tokenId)],
+                    }),
+                  ]);
 
-            if (tokenURI) {
-              nftPromises.push((async () => {
-                const metadata = await fetchIPFSMetadata(tokenURI);
-                return {
-                  id: `${collection.collectionAddress}-${tokenId}`,
-                  tokenId,
-                  collection: collection.collectionAddress,
-                  collectionName: collection.name,
-                  metadata,
-                  owner
-                };
-              })());
+                  if (!tokenURIResult || !ownerResult) return null;
+
+                  const tokenURI = tokenURIResult as string;
+                  const owner = ownerResult as string;
+
+                  const metadata = await fetchIPFSMetadata(tokenURI);
+                  
+                  return {
+                    id: `${collection.collectionAddress}-${tokenId}`,
+                    tokenId,
+                    collection: collection.collectionAddress,
+                    collectionName: collection.name,
+                    metadata,
+                    owner,
+                  };
+                } catch (error) {
+                  console.error(`Error fetching token ${tokenId} data:`, error);
+                  return null;
+                }
+              };
+
+              nftPromises.push(fetchTokenData());
             }
+          } catch (error) {
+            console.error(`Error processing collection ${collection.collectionAddress}:`, error);
           }
         }
 
-        const fetchedNFTs = (await Promise.all(nftPromises)).filter((nft): nft is NFT => nft !== null);
-        console.log("Fetched NFTs:", fetchedNFTs);
-        setNfts(fetchedNFTs.slice(0, 3));
+        const fetchedNFTs = (await Promise.all(nftPromises))
+          .filter((nft): nft is NFT => nft !== null)
+          .slice(0, 3); // Only take the first 3 NFTs
+
+        setNfts(fetchedNFTs);
       } catch (error) {
         console.error('Error fetching NFTs:', error);
       } finally {
@@ -161,8 +156,8 @@ const FeaturedNFTs = ({ className }: NFTGridProps) => {
       }
     };
 
-    fetchAllNFTs();
-  }, [collections, collectionsData, tokenData]);
+    fetchNFTs();
+  }, [collections]);
 
   if (isLoading) {
     return (

@@ -3,7 +3,7 @@ import React, { Suspense } from 'react'
 import Image from 'next/image';
 import Cover from "../assets/cover.svg"
 import UserImage from "../assets/creator.svg"
-import { useAccount, useEnsName, useReadContract } from 'wagmi';
+import { useEnsName, useReadContract } from 'wagmi';
 import CustomButton from './custom/CustomButton';
 import { Copy, Plus } from 'lucide-react';
 import DiscordLogo from "../assets/DiscordLogo.svg"
@@ -18,19 +18,18 @@ import { UserCollections } from './user-collections';
 import { copyAddress, shortenAddress } from '@/lib';
 
 
-// interface CreatorDetailsProps {
-//     creatorAddress: `0x${string}`;
-// }
+interface CreatorDetailsProps {
+    creatorAddress: `0x${string}`;
+}
 
-const CreatorDetails = () => {
-    const { address } = useAccount()
-    const { data: ensName } = useEnsName({ address });
+const CreatorDetails = ({ creatorAddress }: CreatorDetailsProps) => {
+    const { data: ensName } = useEnsName({ address: creatorAddress });
 
     const { data: collections } = useReadContract({
         address: NFT_COLLECTION_FACTORY_ADDRESS as `0x${string}`,
         abi: NFT_COLLECTION_FACTORY_ABI,
         functionName: 'getCreatorCollections',
-        args: [address as `0x${string}`],
+        args: [creatorAddress as `0x${string}`],
     })
 
   return (
@@ -62,10 +61,10 @@ const CreatorDetails = () => {
                     <div className='flex flex-col md:flex-row xl:items-center gap-5'>
                         <CustomButton
                             type='button'
-                            title={ensName || shortenAddress(address as `0x${string}`)}
+                            title={ensName || shortenAddress(creatorAddress as `0x${string}`)}
                             className='bg-accent h-[60px] text-semibold'
                             icon={<Copy size={20} />}
-                            onClick={() => copyAddress(address as `0x${string}`)}
+                            onClick={() => copyAddress(creatorAddress as `0x${string}`)}
                         />
                         <CustomButton
                             type='button'
@@ -170,6 +169,7 @@ const CreatorDetails = () => {
                     <Suspense fallback={<LoadingGrid />}>
                         <UserNfts
                             className={"bg-background"}
+                            creatorAddress={creatorAddress as `0x${string}`}
                         />
                     </Suspense>
                 </div>
@@ -179,7 +179,7 @@ const CreatorDetails = () => {
                     <Suspense fallback={<LoadingGrid />}>
                     <div className="text-center py-10">
                         <h2 className="text-xl font-semibold">No owned/unlisted NFT found</h2>
-                        <p className="text-gray-500">Check back later for new bought/minted NFTs</p>
+                        <p className="text-gray-500">Check back later for newly bought/minted NFTs</p>
                     </div>
                     </Suspense>
                 </div>
@@ -192,7 +192,7 @@ const CreatorDetails = () => {
                         <p className="text-gray-500">Check back later for new collection</p>
                     </div> */}
                         <UserCollections
-                           userAddress={address as `0x${string}`}
+                           userAddress={creatorAddress as `0x${string}`}
                         />
                     </Suspense>
                 </div>

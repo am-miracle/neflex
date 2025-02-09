@@ -32,3 +32,18 @@ export interface Collection {
   maxSupply: bigint
   tokenCount: bigint
 }
+
+export interface Listing {
+  seller: `0x${string}`;
+  collectionAddress?: `0x${string}`;
+  tokenId?: bigint;
+  price: bigint;
+  isAuction: boolean;
+  category?: `0x${string}`;
+  collectionName?: string
+  creator?: string
+  blockTimestamp?: string
+  auctionEndTime: bigint;
+  highestBidder?: `0x${string}`;
+  highestBid: bigint;
+}
