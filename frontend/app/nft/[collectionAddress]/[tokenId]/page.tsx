@@ -7,8 +7,6 @@ export default async function NFTDetailPage({params}: { params: Promise<{ tokenI
   const rawCollectionAddress = (await params).collectionAddress
   const collectionAddress = ethers.hexlify(rawCollectionAddress)
 
-  console.log("tokenId", tokenId)
-  console.log("collection", collectionAddress)
 
     return (
       <NFTDetails
