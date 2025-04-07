@@ -1,6 +1,5 @@
 "use client"
-import { createPublicClient, http, formatEther } from 'viem'
-import { sepolia } from 'viem/chains'
+import { formatEther } from 'viem'
 import React, { useEffect, useState } from 'react'
 import { NFT_COLLECTION_ABI } from '@/constants/abis/NFTCollection'
 import { MARKETPLACE_ABI, MARKETPLACE_ADDRESS } from '@/constants/abis/NFTMarketplace'
@@ -18,17 +17,12 @@ import AuctionCountdown from './AuctionCountdown'
 import BidModal from './BidModal'
 import BuyModal from './BuyModal'
 import { Listing, NFTMetadata } from '@/types'
+import { publicClient } from '@/lib/providers'
 
 interface NFTDetailsProps {
     collectionAddress: `0x${string}`
     tokenId: bigint
 }
-
-// Create a public client
-const publicClient = createPublicClient({
-  chain: sepolia,
-  transport: http()
-})
 
 
 
@@ -270,7 +264,7 @@ const NFTDetails = ({ collectionAddress, tokenId }: NFTDetailsProps) => {
                 height={100}
                 style={{ width: "auto", height: "auto" }}
                 quality={100}
-                priority
+                unoptimized
             />
             <div className='max-w-[1050px] mx-auto px-8 md:px-11 lg:px-36 xl:px-0 md:flex md:gap-10 md:items-start'>
                 <div>

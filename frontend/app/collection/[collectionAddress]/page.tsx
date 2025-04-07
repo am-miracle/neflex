@@ -2,6 +2,7 @@ import CollectionDetails from '@/components/CollectionDetails'
 import { ethers } from 'ethers';
 import Image from 'next/image';
 import React from 'react'
+import PlaceHolder from "../../../assets/collection.svg"
 
 const CollectionAddressPage = async ({ params }: {
     params: Promise<{
@@ -18,7 +19,7 @@ const CollectionAddressPage = async ({ params }: {
         <div className='my-10 px-8 md:px-11 lg:px-36 xl:px-0'>
           <div className='flex items-center gap-3'>
             <Image
-              src={""}
+              src={PlaceHolder}
               alt='collection image'
               width={100}
               height={100}

@@ -17,6 +17,7 @@ const Navbar = ({ userId}: { userId: string | null}) => {
   const navLinks = [
     { href: '/marketplace', label: 'Marketplace' },
     { href: '/creators', label: 'Rankings' },
+    { href: '/mint', label: 'Create' },
     { href: '/wallet', label: 'Connect a wallet' }
   ];
 

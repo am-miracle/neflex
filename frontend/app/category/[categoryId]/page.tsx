@@ -58,7 +58,7 @@ const CategoryPage = async ({params}: {
             <Loader2 className="h-8 w-8 animate-spin" />
           </div>
         }>
-          {nftResponse.data.tokenMinteds.length > 0 ? (
+          {nftResponse.data.itemListeds.length > 0 ? (
             // <NftGrid
             //   data={{
             //     tokenMinteds: nftResponse.data.tokenMinteds.filter((nft: TokenMinted) => {

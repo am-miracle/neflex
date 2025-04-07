@@ -29,8 +29,11 @@ interface Collection {
 
 // Create a public client
 const publicClient = createPublicClient({
+  batch: {
+    multicall: true,
+  },
   chain: sepolia,
-  transport: http()
+  transport: http(process.env.NEXT_PUBLIC_RPC_URL)
 })
 
 const NftGrid = ({ className }: NFTGridProps) => {

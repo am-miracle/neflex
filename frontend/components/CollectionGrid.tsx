@@ -45,6 +45,7 @@ const CollectionGrid = ({ data, itemsPerPage = 3, showPagination = false, classN
                                     alt={collection.name}
                                     width={100}
                                     height={100}
+                                    unoptimized
                                     className="min-h-[295px] max-h-[238px] xl:max-h-[295px] min-w-full object-cover"
                                     style={{ width: "auto", height: "auto" }}
                                 />

@@ -4,8 +4,8 @@ import { ethers } from 'ethers';
 export default async function NFTDetailPage({params}: { params: Promise<{ tokenId: string, collectionAddress: string }> }) {
     const rawTokenId = (await params).tokenId;
     const tokenId = BigInt(rawTokenId);
-  const rawCollectionAddress = (await params).collectionAddress
-  const collectionAddress = ethers.hexlify(rawCollectionAddress)
+    const rawCollectionAddress = (await params).collectionAddress
+    const collectionAddress = ethers.hexlify(rawCollectionAddress)
 
 
     return (

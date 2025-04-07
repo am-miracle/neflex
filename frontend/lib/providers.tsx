@@ -13,6 +13,7 @@ import {
   QueryClientProvider,
   QueryClient,
 } from "@tanstack/react-query";
+import { createPublicClient } from 'viem';
 
 
 const config = getDefaultConfig({
@@ -32,8 +33,18 @@ const queryClient = new QueryClient();
 export const SUPPORTED_NETWORK = {
   id: 11155111,  // Sepolia
   name: 'Sepolia',
-  rpcUrls: ['https://rpc.sepolia.org']
+  rpcUrls: ['https://rpc.sepolia.org', 'https://sepolia.drpc.org',
+    'https://eth-sepolia.public.blastapi.io' ]
 };
+
+// Create a public client
+export const publicClient = createPublicClient({
+  batch: {
+    multicall: true,
+  },
+  chain: sepolia,
+  transport: http(process.env.NEXT_PUBLIC_RPC_URL)
+})
 
 export function RainbowProvider({ children }: { children: React.ReactNode }) {
   return (

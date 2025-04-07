@@ -1,24 +1,17 @@
 "use client"
 import React, { useState, useEffect } from 'react'
-import { createPublicClient, http } from 'viem'
-import { sepolia } from 'viem/chains'
 import { NFT_COLLECTION_FACTORY_ABI, NFT_COLLECTION_FACTORY_ADDRESS } from '@/constants/abis/NFTCollectionFactory'
 import { NFT_COLLECTION_ABI } from '@/constants/abis/NFTCollection'
 import Link from 'next/link'
 import NftCard from './NftCard'
 import Owner from "../assets/owner.svg"
 import { NFT, NFTMetadata } from '@/types'
+import { publicClient } from '@/lib/providers'
 
 interface UserNftsProps {
   className?: string;
   creatorAddress: `0x${string}`;
 }
-
-// Create a public client
-const publicClient = createPublicClient({
-  chain: sepolia,
-  transport: http()
-})
 
 const UserNfts = ({ className, creatorAddress }: UserNftsProps) => {
   const [nfts, setNfts] = useState<NFT[]>([]);
