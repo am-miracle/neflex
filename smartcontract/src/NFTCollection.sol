@@ -127,13 +127,20 @@ contract NFTCollection is ERC721, ERC721URIStorage, ERC721Enumerable, ERC2981, O
         uint256 length = tokenURIs.length;
         if (length == 0) revert NFTCollection__InvalidArrayLength();
         if (length > MAX_BATCH_SIZE) revert NFTCollection__BatchSizeTooLarge();
-        if (_nextTokenId + length > i_maxSupply) revert NFTCollection__MaxSupplyReached();
+        uint256 startId = _nextTokenId;
+        if (startId + length > i_maxSupply) revert NFTCollection__MaxSupplyReached();
 
         uint256[] memory tokenIds = new uint256[](length);
+        uint96 tokenId = uint96(startId);
+
         unchecked {
             for (uint256 i = 0; i < length; ++i) {
-                tokenIds[i] = _mintSingle(to, tokenURIs[i], royaltyFee);
+                tokenIds[i] = tokenId + i;
+                _safeMint(to, tokenIds[i]);
+                _setTokenURI(tokenIds[i], tokenURIs[i]);
+                _setTokenRoyalty(tokenIds[i], to, royaltyFee);
             }
+            _nextTokenId = tokenId + uint96(length);
         }
 
         emit BatchTokensMinted(to, tokenIds, tokenURIs, royaltyFee);

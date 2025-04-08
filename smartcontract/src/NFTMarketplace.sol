@@ -34,6 +34,7 @@ contract NFTMarketplace is ReentrancyGuard, Pausable, Ownable {
     error NFTMarketplace__InvalidCategory();
     error NFTMarketplace__InvalidAuctionDuration();
     error NFTMarketplace__InvalidMarketplaceFee();
+    error NFTMarketplace__NoBids();
 
     // Type declaration
     using EnumerableSet for EnumerableSet.Bytes32Set;
@@ -42,7 +43,7 @@ contract NFTMarketplace is ReentrancyGuard, Pausable, Ownable {
     // Constants
     uint256 private constant MIN_AUCTION_DURATION = 1 hours;
     uint256 private constant MAX_AUCTION_DURATION = 30 days;
-    uint256 private constant MIN_BID_INCREMENT = 0.01 ether;
+    uint256 private constant MIN_BID_INCREMENT = 0.001 ether;
     uint256 private constant MAX_MARKETPLACE_FEE = 1000; // 10% in basis points
 
     // State Variables
@@ -80,6 +81,7 @@ contract NFTMarketplace is ReentrancyGuard, Pausable, Ownable {
         uint256 price,
         bool isAuction,
         bytes32 category,
+        uint256 auctionEndTime,
         uint256 timestamp,
         string collectionName,
         address creator
@@ -105,6 +107,8 @@ contract NFTMarketplace is ReentrancyGuard, Pausable, Ownable {
     event BidWithdrawn(
         address indexed bidder, address indexed nftAddress, uint256 indexed tokenId, uint256 amount, uint256 timestamp
     );
+
+    event BidCancelled(address indexed bidder, address indexed nftAddress, uint256 indexed tokenId, uint256 timestamp);
 
     event AuctionEnded(
         address indexed winner,
@@ -176,7 +180,7 @@ contract NFTMarketplace is ReentrancyGuard, Pausable, Ownable {
         s_categoryListings[category].push(tokenId);
 
         emit ItemListed(
-            msg.sender, nftAddress, tokenId, price, isAuction, category, block.timestamp, collectionName, creator
+            msg.sender, nftAddress, tokenId, price, isAuction, category, auctionDuration, block.timestamp, collectionName, creator
         );
     }
 
@@ -194,6 +198,29 @@ contract NFTMarketplace is ReentrancyGuard, Pausable, Ownable {
 
         delete s_listings[nftAddress][tokenId];
         emit ItemCanceled(msg.sender, nftAddress, tokenId, block.timestamp);
+    }
+
+    function updateListing(address nftAddress, uint256 tokenId, uint256 newPrice) external nonReentrant {
+        Listing storage listing = s_listings[nftAddress][tokenId];
+        if (listing.seller != msg.sender) revert NFTMarketplace__NotOwner();
+        if (newPrice <= 0) revert NFTMarketplace__PriceMustBeAboveZero();
+
+        if (listing.isAuction) revert NFTMarketplace__AuctionStillActive();
+
+        listing.price = newPrice;
+
+        emit ItemListed(
+            listing.seller,
+            nftAddress,
+            tokenId,
+            newPrice,
+            listing.isAuction,
+            listing.category,
+            listing.auctionEndTime,
+            block.timestamp,
+            _getCollectionName(nftAddress),
+            _getCreator(nftAddress)
+        );
     }
 
     /**
@@ -235,6 +262,38 @@ contract NFTMarketplace is ReentrancyGuard, Pausable, Ownable {
         s_bids[nftAddress][tokenId].push(Bid({bidder: msg.sender, amount: msg.value, timestamp: block.timestamp}));
 
         emit BidPlaced(msg.sender, nftAddress, tokenId, msg.value, block.timestamp);
+    }
+
+    function cancelBid(address nftAddress, uint256 tokenId) external nonReentrant {
+        Listing storage listing = s_listings[nftAddress][tokenId];
+        if (!listing.isAuction) revert NFTMarketplace__AuctionNotActive();
+        if (block.timestamp > listing.auctionEndTime) revert NFTMarketplace__AuctionEnded();
+        if (listing.highestBidder != msg.sender) revert NFTMarketplace__NotHighestBidder();
+
+        // Store bid amount for refund
+        uint256 bidAmount = listing.highestBid;
+
+        // Revert to previous bid if exists
+        if (s_bids[nftAddress][tokenId].length > 1) {
+            // Get previous bid
+            Bid memory previousBid = s_bids[nftAddress][tokenId][s_bids[nftAddress][tokenId].length - 2];
+
+            // Update listing to previous bid
+            listing.highestBidder = previousBid.bidder;
+            listing.highestBid = previousBid.amount;
+        } else {
+            // No previous bids - reset to starting price
+            listing.highestBidder = address(0);
+            listing.highestBid = 0;
+        }
+
+        // Remove the canceled bid from history
+        s_bids[nftAddress][tokenId].pop();
+
+        // Refund the canceled bid
+        payable(msg.sender).sendValue(bidAmount);
+
+        emit BidCancelled(msg.sender, nftAddress, tokenId, block.timestamp);
     }
 
     /**
@@ -304,15 +363,18 @@ contract NFTMarketplace is ReentrancyGuard, Pausable, Ownable {
         uint256 remainingAmount = paymentAmount;
 
         if (royaltyAmount > 0) {
-            payable(royaltyReceiver).sendValue(royaltyAmount);
+            (bool success, ) = royaltyReceiver.call{value: royaltyAmount}("");
+            require(success, "Royalty transfer failed");
             remainingAmount -= royaltyAmount;
         }
 
-        uint256 marketplaceFee = (remainingAmount * i_marketplaceFee) / 10000;
-        payable(owner()).sendValue(marketplaceFee);
+           unchecked {
+            uint256 marketplaceFee = (remainingAmount * i_marketplaceFee) / 10000;
+            (bool feeSuccess, ) = owner().call{value: marketplaceFee}("");
+            require(feeSuccess, "Fee transfer failed");
 
-        uint256 sellerEarnings = remainingAmount - marketplaceFee;
-        s_earnings[seller] += sellerEarnings;
+            s_earnings[seller] += remainingAmount - marketplaceFee;
+        }
 
         IERC721(nftAddress).safeTransferFrom(seller, buyer, tokenId);
 
@@ -361,5 +423,17 @@ contract NFTMarketplace is ReentrancyGuard, Pausable, Ownable {
 
     function getMarketplaceFee() external view returns (uint256) {
         return i_marketplaceFee;
+    }
+
+    function getCollectionName(address nftAddress) external view returns (string memory) {
+        return _getCollectionName(nftAddress);
+    }
+
+    function getCreator(address nftAddress) external view returns (address) {
+        return _getCreator(nftAddress);
+    }
+
+    function getMinBidIncrement() external pure returns (uint256) {
+        return MIN_BID_INCREMENT;
     }
 }

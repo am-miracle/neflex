@@ -1,17 +1,17 @@
 "use client"
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAccount, useWriteContract, useWaitForTransactionReceipt, useReadContract } from 'wagmi'
+import { useAccount, useWriteContract, useWaitForTransactionReceipt, useReadContract, useBalance, useEstimateFeesPerGas } from 'wagmi'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import toast from 'react-hot-toast'
-import { parseEther } from 'viem'
 import { NFT_COLLECTION_ABI } from '@/constants/abis/NFTCollection'
 import { MARKETPLACE_ABI, MARKETPLACE_ADDRESS } from '@/constants/abis/NFTMarketplace'
 import CustomButton from './custom/CustomButton'
 import { CategoryAdded } from '@/types'
+import { ethers, parseEther } from 'ethers'
 
 interface ListNFTFormProps {
   tokenId: bigint;
@@ -38,6 +38,10 @@ const ListNFTForm: React.FC<ListNFTFormProps> = ({ tokenId, categories, collecti
   const [isApproving, setIsApproving] = useState(false)
   const [isListing, setIsListing] = useState(false)
   
+  // Balance and gas estimation hooks
+  const { data: balance } = useBalance({ address })
+  const { data: feeData } = useEstimateFeesPerGas()
+  
   // Approval and listing hooks
   const { writeContract: writeNFTContract } = useWriteContract()
   const { writeContract: writeMarketContract, data: listingHash, isSuccess: isListingSuccess, isPending: isListingPending } = useWriteContract()
@@ -49,9 +53,26 @@ const ListNFTForm: React.FC<ListNFTFormProps> = ({ tokenId, categories, collecti
   const { data: isApprovedForAll } = useReadContract({
     address: collectionAddress as `0x${string}`,
     abi: NFT_COLLECTION_ABI,
-    functionName: 'isApprovedForAll',
-    args: [address as `0x${string}`, MARKETPLACE_ADDRESS as `0x${string}`]
+    functionName: 'getApproved',
+    args: [tokenId],
   })
+
+  const { data: owner } = useReadContract({
+    address: collectionAddress as `0x${string}`,
+    abi: NFT_COLLECTION_ABI,
+    functionName: 'ownerOf',
+    args: [tokenId],
+  })
+
+  const hasSufficientFunds = () => {
+    if (!balance?.value) return false
+    if (!formData.price) return true
+
+    const priceInWei = parseEther(formData.price)
+    const totalGasNeeded = (feeData?.gasPrice || BigInt(0)) * BigInt(formData.listingType === 'auction' ? 200000 : 150000)
+
+    return balance.value > (priceInWei + totalGasNeeded)
+  }
 
   useEffect(() => {
     if (isApprovalSuccess) {
@@ -64,18 +85,22 @@ const ListNFTForm: React.FC<ListNFTFormProps> = ({ tokenId, categories, collecti
     if (isListingSuccess) {
       toast.success('NFT listing completed')
       setIsListing(false)
-      router.push(`/nft/${tokenId.toString()}`)
+      router.push(`/nft/${collectionAddress}/${tokenId.toString()}`)
     }
-  }, [isListingSuccess, router, tokenId])
+  }, [isListingSuccess, router, tokenId, collectionAddress]);
 
   const handleApprove = async () => {
     try {
+      if(owner !== address) {
+        toast.error('You are not the owner of this NFT')
+        return
+      }
       setIsApproving(true)
       await writeNFTContract({
         address: collectionAddress as `0x${string}`,
         abi: NFT_COLLECTION_ABI,
-        functionName: 'setApprovalForAll',
-        args: [MARKETPLACE_ADDRESS as `0x${string}`, true],
+        functionName: 'approve',
+        args: [MARKETPLACE_ADDRESS as `0x${string}`, tokenId],
       })
     } catch (error: Error | unknown) {
       console.error('Approval failed:', error)
@@ -86,18 +111,25 @@ const ListNFTForm: React.FC<ListNFTFormProps> = ({ tokenId, categories, collecti
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    if (!hasSufficientFunds()) {
+      toast.error('Insufficient funds for gas and listing price')
+      return
+    }
+
     if (!formData.price || !formData.category || !address) {
       toast.error('Please fill in all fields')
       return
     }
 
     try {
+      setIsListing(true)
       const priceInWei = parseEther(formData.price)
-      const categoryBytes = formData.category.padEnd(66, '0') as `0x${string}`
+      const categoryBytes = formData.category as `0x${string}`
       const isAuction = formData.listingType === 'auction';
       const auctionDuration = isAuction ? BigInt(formData.duration) : BigInt(0);
 
-      await writeMarketContract({
+      writeMarketContract({
         address: MARKETPLACE_ADDRESS as `0x${string}`,
         abi: MARKETPLACE_ABI,
         functionName: 'listItem',
@@ -114,9 +146,9 @@ const ListNFTForm: React.FC<ListNFTFormProps> = ({ tokenId, categories, collecti
     } catch (error) {
       console.error('Listing failed:', error)
       toast.error('Failed to list NFT')
+      setIsListing(false)
     }
   }
-
 
   const handleFormChange = (field: keyof ListingFormData, value: string) => {
     setFormData(prev => ({
@@ -127,6 +159,24 @@ const ListNFTForm: React.FC<ListNFTFormProps> = ({ tokenId, categories, collecti
 
   return (
     <form onSubmit={handleSubmit} className="max-w-lg mx-auto space-y-6">
+      {/* Gas Estimation Banner */}
+      <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4">
+        <div className="flex">
+          <div className="ml-3">
+            <p className="text-sm text-yellow-700">
+              Estimated gas cost: {feeData?.gasPrice
+                ? ethers.formatEther((feeData.gasPrice * BigInt(formData.listingType === 'auction' ? 200000 : 150000)).toString()) 
+                : "Loading..."} ETH
+            </p>
+            {!hasSufficientFunds() && (
+              <p className="text-sm text-red-600 mt-1">
+                Warning: Your balance may be insufficient for this transaction
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+
       {/* Listing Type Selection */}
       <div className="space-y-3">
         <Label>Listing Type</Label>
@@ -203,8 +253,8 @@ const ListNFTForm: React.FC<ListNFTFormProps> = ({ tokenId, categories, collecti
           <SelectContent
             className="bg-white rounded-[20px] text-base text-background active:text-white w-full"
           >
-            {categories?.map((category: CategoryAdded, index: number) => (
-              <SelectItem key={index} value={category.category}>
+            {categories?.map((category: CategoryAdded) => (
+              <SelectItem key={category.category} value={category.category}>
                 {category.name}
               </SelectItem>
             ))}
@@ -229,7 +279,7 @@ const ListNFTForm: React.FC<ListNFTFormProps> = ({ tokenId, categories, collecti
         type="submit"
         title={isListing ? 'Listing...' : 'List NFT'}
         isLoading={isListing || isListingPending}
-        isDisabled={!address}
+        isDisabled={!address || !hasSufficientFunds() || !formData.price || !formData.category}
         className="w-full bg-accent h-12"
       />
     </form>
