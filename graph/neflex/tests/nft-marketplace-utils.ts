@@ -2,6 +2,7 @@ import { newMockEvent } from "matchstick-as"
 import { ethereum, Address, BigInt, Bytes } from "@graphprotocol/graph-ts"
 import {
   AuctionEnded,
+  BidCancelled,
   BidPlaced,
   BidWithdrawn,
   CategoryAdded,
@@ -55,6 +56,41 @@ export function createAuctionEndedEvent(
   )
 
   return auctionEndedEvent
+}
+
+export function createBidCancelledEvent(
+  bidder: Address,
+  nftAddress: Address,
+  tokenId: BigInt,
+  timestamp: BigInt
+): BidCancelled {
+  let bidCancelledEvent = changetype<BidCancelled>(newMockEvent())
+
+  bidCancelledEvent.parameters = new Array()
+
+  bidCancelledEvent.parameters.push(
+    new ethereum.EventParam("bidder", ethereum.Value.fromAddress(bidder))
+  )
+  bidCancelledEvent.parameters.push(
+    new ethereum.EventParam(
+      "nftAddress",
+      ethereum.Value.fromAddress(nftAddress)
+    )
+  )
+  bidCancelledEvent.parameters.push(
+    new ethereum.EventParam(
+      "tokenId",
+      ethereum.Value.fromUnsignedBigInt(tokenId)
+    )
+  )
+  bidCancelledEvent.parameters.push(
+    new ethereum.EventParam(
+      "timestamp",
+      ethereum.Value.fromUnsignedBigInt(timestamp)
+    )
+  )
+
+  return bidCancelledEvent
 }
 
 export function createBidPlacedEvent(
@@ -284,6 +320,7 @@ export function createItemListedEvent(
   price: BigInt,
   isAuction: boolean,
   category: Bytes,
+  auctionEndTime: BigInt,
   timestamp: BigInt,
   collectionName: string,
   creator: Address
@@ -315,6 +352,12 @@ export function createItemListedEvent(
   )
   itemListedEvent.parameters.push(
     new ethereum.EventParam("category", ethereum.Value.fromFixedBytes(category))
+  )
+  itemListedEvent.parameters.push(
+    new ethereum.EventParam(
+      "auctionEndTime",
+      ethereum.Value.fromUnsignedBigInt(auctionEndTime)
+    )
   )
   itemListedEvent.parameters.push(
     new ethereum.EventParam(

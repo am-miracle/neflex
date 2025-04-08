@@ -58,28 +58,6 @@
   },
   {
     "type": "function",
-    "name": "getActiveAuctions",
-    "inputs": [],
-    "outputs": [
-      {
-        "name": "nftAddresses",
-        "type": "address[]",
-        "internalType": "address[]"
-      },
-      { "name": "tokenIds", "type": "uint256[]", "internalType": "uint256[]" },
-      { "name": "sellers", "type": "address[]", "internalType": "address[]" },
-      { "name": "prices", "type": "uint256[]", "internalType": "uint256[]" },
-      { "name": "endTimes", "type": "uint256[]", "internalType": "uint256[]" },
-      {
-        "name": "highestBids",
-        "type": "uint256[]",
-        "internalType": "uint256[]"
-      }
-    ],
-    "stateMutability": "view"
-  },
-  {
-    "type": "function",
     "name": "getBidHistory",
     "inputs": [
       { "name": "nftAddress", "type": "address", "internalType": "address" },
@@ -104,7 +82,7 @@
     "name": "getCategories",
     "inputs": [],
     "outputs": [
-      { "name": "categories", "type": "bytes32[]", "internalType": "bytes32[]" }
+      { "name": "", "type": "bytes32[]", "internalType": "bytes32[]" }
     ],
     "stateMutability": "view"
   },
@@ -174,48 +152,9 @@
   },
   {
     "type": "function",
-    "name": "getListingsByCategory",
-    "inputs": [
-      { "name": "category", "type": "bytes32", "internalType": "bytes32" },
-      { "name": "offset", "type": "uint256", "internalType": "uint256" },
-      { "name": "limit", "type": "uint256", "internalType": "uint256" }
-    ],
-    "outputs": [
-      { "name": "sellers", "type": "address[]", "internalType": "address[]" },
-      { "name": "prices", "type": "uint256[]", "internalType": "uint256[]" },
-      {
-        "name": "nftAddresses",
-        "type": "address[]",
-        "internalType": "address[]"
-      },
-      { "name": "tokenIds", "type": "uint256[]", "internalType": "uint256[]" }
-    ],
-    "stateMutability": "view"
-  },
-  {
-    "type": "function",
     "name": "getMarketplaceFee",
     "inputs": [],
     "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
-    "stateMutability": "view"
-  },
-  {
-    "type": "function",
-    "name": "getMarketplaceStats",
-    "inputs": [],
-    "outputs": [
-      {
-        "name": "totalActiveListings",
-        "type": "uint256",
-        "internalType": "uint256"
-      },
-      { "name": "totalAuctions", "type": "uint256", "internalType": "uint256" },
-      {
-        "name": "totalCategories",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
     "stateMutability": "view"
   },
   {
@@ -227,34 +166,18 @@
   },
   {
     "type": "function",
-    "name": "getUserActivity",
-    "inputs": [
-      { "name": "user", "type": "address", "internalType": "address" }
-    ],
-    "outputs": [
-      {
-        "name": "activeListings",
-        "type": "uint256",
-        "internalType": "uint256"
-      },
-      { "name": "activeBids", "type": "uint256", "internalType": "uint256" },
-      {
-        "name": "availableEarnings",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
-    "stateMutability": "view"
-  },
-  {
-    "type": "function",
     "name": "listItem",
     "inputs": [
       { "name": "nftAddress", "type": "address", "internalType": "address" },
       { "name": "tokenId", "type": "uint256", "internalType": "uint256" },
       { "name": "price", "type": "uint256", "internalType": "uint256" },
       { "name": "isAuction", "type": "bool", "internalType": "bool" },
-      { "name": "category", "type": "bytes32", "internalType": "bytes32" }
+      { "name": "category", "type": "bytes32", "internalType": "bytes32" },
+      {
+        "name": "auctionDuration",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
     ],
     "outputs": [],
     "stateMutability": "nonpayable"
@@ -364,6 +287,37 @@
         "type": "address",
         "indexed": false,
         "internalType": "address"
+      },
+      {
+        "name": "timestamp",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "BidCancelled",
+    "inputs": [
+      {
+        "name": "bidder",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "nftAddress",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "tokenId",
+        "type": "uint256",
+        "indexed": true,
+        "internalType": "uint256"
       },
       {
         "name": "timestamp",
@@ -625,6 +579,12 @@
         "internalType": "bytes32"
       },
       {
+        "name": "auctionEndTime",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      },
+      {
         "name": "timestamp",
         "type": "uint256",
         "indexed": false,
@@ -728,7 +688,18 @@
       { "name": "minBidRequired", "type": "uint256", "internalType": "uint256" }
     ]
   },
+  {
+    "type": "error",
+    "name": "NFTMarketplace__InvalidAuctionDuration",
+    "inputs": []
+  },
   { "type": "error", "name": "NFTMarketplace__InvalidCategory", "inputs": [] },
+  {
+    "type": "error",
+    "name": "NFTMarketplace__InvalidMarketplaceFee",
+    "inputs": []
+  },
+  { "type": "error", "name": "NFTMarketplace__NoBids", "inputs": [] },
   { "type": "error", "name": "NFTMarketplace__NoEarnings", "inputs": [] },
   {
     "type": "error",

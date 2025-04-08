@@ -1,5 +1,6 @@
 import {
   AuctionEnded as AuctionEndedEvent,
+  BidCancelled as BidCancelledEvent,
   BidPlaced as BidPlacedEvent,
   BidWithdrawn as BidWithdrawnEvent,
   CategoryAdded as CategoryAddedEvent,
@@ -9,10 +10,11 @@ import {
   ItemListed as ItemListedEvent,
   OwnershipTransferred as OwnershipTransferredEvent,
   Paused as PausedEvent,
-  Unpaused as UnpausedEvent,
+  Unpaused as UnpausedEvent
 } from "../generated/NFTMarketplace/NFTMarketplace"
 import {
   AuctionEnded,
+  BidCancelled,
   BidPlaced,
   BidWithdrawn,
   CategoryAdded,
@@ -22,12 +24,12 @@ import {
   ItemListed,
   OwnershipTransferred,
   Paused,
-  Unpaused,
+  Unpaused
 } from "../generated/schema"
 
 export function handleAuctionEnded(event: AuctionEndedEvent): void {
   let entity = new AuctionEnded(
-    event.transaction.hash.concatI32(event.logIndex.toI32()),
+    event.transaction.hash.concatI32(event.logIndex.toI32())
   )
   entity.winner = event.params.winner
   entity.nftAddress = event.params.nftAddress
@@ -43,9 +45,25 @@ export function handleAuctionEnded(event: AuctionEndedEvent): void {
   entity.save()
 }
 
+export function handleBidCancelled(event: BidCancelledEvent): void {
+  let entity = new BidCancelled(
+    event.transaction.hash.concatI32(event.logIndex.toI32())
+  )
+  entity.bidder = event.params.bidder
+  entity.nftAddress = event.params.nftAddress
+  entity.tokenId = event.params.tokenId
+  entity.timestamp = event.params.timestamp
+
+  entity.blockNumber = event.block.number
+  entity.blockTimestamp = event.block.timestamp
+  entity.transactionHash = event.transaction.hash
+
+  entity.save()
+}
+
 export function handleBidPlaced(event: BidPlacedEvent): void {
   let entity = new BidPlaced(
-    event.transaction.hash.concatI32(event.logIndex.toI32()),
+    event.transaction.hash.concatI32(event.logIndex.toI32())
   )
   entity.bidder = event.params.bidder
   entity.nftAddress = event.params.nftAddress
@@ -62,7 +80,7 @@ export function handleBidPlaced(event: BidPlacedEvent): void {
 
 export function handleBidWithdrawn(event: BidWithdrawnEvent): void {
   let entity = new BidWithdrawn(
-    event.transaction.hash.concatI32(event.logIndex.toI32()),
+    event.transaction.hash.concatI32(event.logIndex.toI32())
   )
   entity.bidder = event.params.bidder
   entity.nftAddress = event.params.nftAddress
@@ -79,7 +97,7 @@ export function handleBidWithdrawn(event: BidWithdrawnEvent): void {
 
 export function handleCategoryAdded(event: CategoryAddedEvent): void {
   let entity = new CategoryAdded(
-    event.transaction.hash.concatI32(event.logIndex.toI32()),
+    event.transaction.hash.concatI32(event.logIndex.toI32())
   )
   entity.category = event.params.category
   entity.name = event.params.name
@@ -94,7 +112,7 @@ export function handleCategoryAdded(event: CategoryAddedEvent): void {
 
 export function handleEarningsWithdrawn(event: EarningsWithdrawnEvent): void {
   let entity = new EarningsWithdrawn(
-    event.transaction.hash.concatI32(event.logIndex.toI32()),
+    event.transaction.hash.concatI32(event.logIndex.toI32())
   )
   entity.seller = event.params.seller
   entity.amount = event.params.amount
@@ -109,7 +127,7 @@ export function handleEarningsWithdrawn(event: EarningsWithdrawnEvent): void {
 
 export function handleItemBought(event: ItemBoughtEvent): void {
   let entity = new ItemBought(
-    event.transaction.hash.concatI32(event.logIndex.toI32()),
+    event.transaction.hash.concatI32(event.logIndex.toI32())
   )
   entity.buyer = event.params.buyer
   entity.nftAddress = event.params.nftAddress
@@ -129,7 +147,7 @@ export function handleItemBought(event: ItemBoughtEvent): void {
 
 export function handleItemCanceled(event: ItemCanceledEvent): void {
   let entity = new ItemCanceled(
-    event.transaction.hash.concatI32(event.logIndex.toI32()),
+    event.transaction.hash.concatI32(event.logIndex.toI32())
   )
   entity.seller = event.params.seller
   entity.nftAddress = event.params.nftAddress
@@ -145,7 +163,7 @@ export function handleItemCanceled(event: ItemCanceledEvent): void {
 
 export function handleItemListed(event: ItemListedEvent): void {
   let entity = new ItemListed(
-    event.transaction.hash.concatI32(event.logIndex.toI32()),
+    event.transaction.hash.concatI32(event.logIndex.toI32())
   )
   entity.seller = event.params.seller
   entity.nftAddress = event.params.nftAddress
@@ -153,6 +171,7 @@ export function handleItemListed(event: ItemListedEvent): void {
   entity.price = event.params.price
   entity.isAuction = event.params.isAuction
   entity.category = event.params.category
+  entity.auctionEndTime = event.params.auctionEndTime
   entity.timestamp = event.params.timestamp
   entity.collectionName = event.params.collectionName
   entity.creator = event.params.creator
@@ -165,10 +184,10 @@ export function handleItemListed(event: ItemListedEvent): void {
 }
 
 export function handleOwnershipTransferred(
-  event: OwnershipTransferredEvent,
+  event: OwnershipTransferredEvent
 ): void {
   let entity = new OwnershipTransferred(
-    event.transaction.hash.concatI32(event.logIndex.toI32()),
+    event.transaction.hash.concatI32(event.logIndex.toI32())
   )
   entity.previousOwner = event.params.previousOwner
   entity.newOwner = event.params.newOwner
@@ -182,7 +201,7 @@ export function handleOwnershipTransferred(
 
 export function handlePaused(event: PausedEvent): void {
   let entity = new Paused(
-    event.transaction.hash.concatI32(event.logIndex.toI32()),
+    event.transaction.hash.concatI32(event.logIndex.toI32())
   )
   entity.account = event.params.account
 
@@ -195,7 +214,7 @@ export function handlePaused(event: PausedEvent): void {
 
 export function handleUnpaused(event: UnpausedEvent): void {
   let entity = new Unpaused(
-    event.transaction.hash.concatI32(event.logIndex.toI32()),
+    event.transaction.hash.concatI32(event.logIndex.toI32())
   )
   entity.account = event.params.account
 

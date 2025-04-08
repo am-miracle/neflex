@@ -40,24 +40,3 @@ deployNftMarketplace:
 
 deployNftCollectionFactory:
 	@forge script script/DeployNftCollectionFactory.s.sol:DeployNftCollectionFactory $(NETWORK_ARGS)
-
-mintNft:
-	@forge script script/Interactions.s.sol:MintNft $(NETWORK_ARGS)
-
-batchMintNft:
-	@forge script script/Interactions.s.sol:BatchMintNft $(NETWORK_ARGS)
-
-listNft:
-	@forge script script/Interactions.s.sol:ListNft $(NETWORK_ARGS)
-
-addCategory:
-	@forge script script/Interactions.s.sol:AddCategory $(NETWORK_ARGS)
-
-buyNFT:
-	@forge script script/Interactions.s.sol:BuyNft $(NETWORK_ARGS)
-
-placeBid:
-	@forge script script/Interactions.s.sol:PlaceBid $(NETWORK_ARGS)
-
-endAuction:
-	@forge script script/Interactions.s.sol:EndAuction $(NETWORK_ARGS)
