@@ -33,7 +33,7 @@ export default function BuyModal({
 
   const handleBuy = async () => {
     try {
-      await writeContract({
+      writeContract({
         address: MARKETPLACE_ADDRESS as `0x${string}`,
         abi: MARKETPLACE_ABI,
         functionName: 'buyItem',

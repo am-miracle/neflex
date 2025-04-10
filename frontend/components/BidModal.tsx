@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input"
 import { useEffect, useState } from "react"
 import { formatEther, parseEther } from "viem"
-import { useWriteContract, useWaitForTransactionReceipt } from "wagmi"
+import { useWriteContract, useWaitForTransactionReceipt, useReadContract } from "wagmi"
 import toast from "react-hot-toast"
 import { MARKETPLACE_ABI, MARKETPLACE_ADDRESS } from "@/constants/abis/NFTMarketplace"
 import CustomButton from "./custom/CustomButton"
@@ -14,7 +14,6 @@ interface BidModalProps {
   collectionAddress: `0x${string}`
   tokenId: bigint
   currentBid: bigint
-  minBidIncrement: string
 }
 
 export default function BidModal({
@@ -23,15 +22,20 @@ export default function BidModal({
   collectionAddress,
   tokenId,
   currentBid,
-  minBidIncrement
 }: BidModalProps) {
   const [bidAmount, setBidAmount] = useState('')
 
-  const { writeContract, data: hash } = useWriteContract()
+  const { writeContract, data: hash } = useWriteContract();
   const { isLoading: isBidding, isSuccess } = useWaitForTransactionReceipt({ hash })
 
+    const { data: minBidIncrement } = useReadContract({
+      address: MARKETPLACE_ADDRESS as `0x${string}`,
+      abi: MARKETPLACE_ABI,
+      functionName: 'getMinBidIncrement',
+    })
+
   // Calculate minimum bid
-  const minBid = BigInt(currentBid) + BigInt(minBidIncrement)
+  const minBid = BigInt(currentBid) + (minBidIncrement ?? BigInt(1000000000000000))
 
   const handleBid = async () => {
     try {
@@ -47,11 +51,11 @@ export default function BidModal({
       }
 
       if (bidInWei < minBid) {
-        toast.error(`Minimum bid increment is ${formatEther(BigInt(minBidIncrement))} ETH`)
+        toast.error(`Minimum bid increment is ${formatEther(minBidIncrement ?? BigInt(1000000000000000))} ETH`)
         return
       }
 
-      await writeContract({
+      writeContract({
         address: MARKETPLACE_ADDRESS as `0x${string}`,
         abi: MARKETPLACE_ABI,
         functionName: 'placeBid',
@@ -98,7 +102,7 @@ export default function BidModal({
               step="0.001"
               value={bidAmount}
               onChange={(e) => setBidAmount(e.target.value)}
-              className="bg-white rounded-[20px] h-12"
+              className="bg-white text-black rounded-[20px] h-12"
               placeholder="Enter bid amount"
             />
           </div>

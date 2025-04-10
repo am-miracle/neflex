@@ -8,8 +8,8 @@ interface NftProps {
     price?: number;
     owner?: string;
     ownerImage?: string;
-  highestBid?: number;
-  className?: string;
+    highestBid?: number;
+    className?: string;
 }
 
 const NftCard = ({

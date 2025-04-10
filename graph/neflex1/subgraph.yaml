@@ -32,7 +32,8 @@ dataSources:
         - name: NFTMarketplace
           file: ./abis/NFTMarketplace.json
       eventHandlers:
-        - event: AuctionEnded(indexed address,indexed address,indexed uint256,uint256,address,uint256)
+        - event: AuctionEnded(indexed address,indexed address,indexed
+            uint256,uint256,address,uint256)
           handler: handleAuctionEnded
         - event: BidCancelled(indexed address,indexed address,indexed uint256,uint256)
           handler: handleBidCancelled
@@ -44,11 +45,13 @@ dataSources:
           handler: handleCategoryAdded
         - event: EarningsWithdrawn(indexed address,uint256,uint256)
           handler: handleEarningsWithdrawn
-        - event: ItemBought(indexed address,indexed address,indexed uint256,uint256,address,uint256,uint256,address)
+        - event: ItemBought(indexed address,indexed address,indexed
+            uint256,uint256,address,uint256,uint256,address)
           handler: handleItemBought
         - event: ItemCanceled(indexed address,indexed address,indexed uint256,uint256)
           handler: handleItemCanceled
-        - event: ItemListed(indexed address,indexed address,indexed uint256,uint256,bool,bytes32,uint256,uint256,string,address)
+        - event: ItemListed(indexed address,indexed address,indexed
+            uint256,uint256,bool,bytes32,uint256,uint256,string,address)
           handler: handleItemListed
         - event: OwnershipTransferred(indexed address,indexed address)
           handler: handleOwnershipTransferred
@@ -57,3 +60,82 @@ dataSources:
         - event: Unpaused(address)
           handler: handleUnpaused
       file: ./src/nft-marketplace.ts
+  - kind: ethereum
+    name: NFTCollection
+    network: sepolia
+    source:
+      address: "0x75209b7e1186C13AeBd895E7Fa5dFb4eEBE2E426"
+      abi: NFTCollection
+      startBlock: 8080232
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - Approval
+        - ApprovalForAll
+        - BaseURILocked
+        - BaseURIUpdated
+        - BatchMetadataUpdate
+        - BatchTokensMinted
+        - MetadataUpdate
+        - MetadataUpdated
+        - NFTCollectionOwnershipTransferred
+        - TokenBurned
+        - TokenMinted
+        - TokenURILocked
+        - Transfer
+      abis:
+        - name: NFTCollection
+          file: ./abis/NFTCollection.json
+      eventHandlers:
+        - event: Approval(indexed address,indexed address,indexed uint256)
+          handler: handleApproval
+        - event: ApprovalForAll(indexed address,indexed address,bool)
+          handler: handleApprovalForAll
+        - event: BaseURILocked()
+          handler: handleBaseURILocked
+        - event: BaseURIUpdated(string)
+          handler: handleBaseURIUpdated
+        - event: BatchMetadataUpdate(uint256,uint256)
+          handler: handleBatchMetadataUpdate
+        - event: BatchTokensMinted(indexed address,uint256[],string[],uint96)
+          handler: handleBatchTokensMinted
+        - event: MetadataUpdate(uint256)
+          handler: handleMetadataUpdate
+        - event: MetadataUpdated(indexed uint256,string,string)
+          handler: handleMetadataUpdated
+        - event: OwnershipTransferred(indexed address,indexed address)
+          handler: handleOwnershipTransferred
+        - event: TokenBurned(indexed uint256)
+          handler: handleTokenBurned
+        - event: TokenMinted(indexed address,indexed uint256,string,uint96)
+          handler: handleTokenMinted
+        - event: TokenURILocked(indexed uint256)
+          handler: handleTokenURILocked
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer
+      file: ./src/nft-collection.ts
+  - kind: ethereum
+    name: NFTCollectionFactory
+    network: sepolia
+    source:
+      address: "0xE9E74b0A15FeD2f2A24d61E656F92765972C4E69"
+      abi: NFTCollectionFactory
+      startBlock: 8080359
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - CollectionCreated
+        - NFTCollectionFactoryOwnershipTransferred
+      abis:
+        - name: NFTCollectionFactory
+          file: ./abis/NFTCollectionFactory.json
+      eventHandlers:
+        - event: CollectionCreated(indexed address,indexed address,string,string,string,uint256)
+          handler: handleCollectionCreated
+        - event: OwnershipTransferred(indexed address,indexed address)
+          handler: handleOwnershipTransferred
+      file: ./src/nft-collection-factory.ts

@@ -109,7 +109,7 @@ const UserNfts = ({ className, creatorAddress }: UserNftsProps) => {
                   if (!tokenURI || !owner) return null;
 
                   const metadata = await fetchIPFSMetadata(tokenURI as string);
-                  
+
                   // Only include NFTs owned by the creator
                   if (owner.toLowerCase() === creatorAddress.toLowerCase()) {
                     return {

@@ -22,6 +22,12 @@ const MintPage = ({
   const { address } = useAccount();
   const { collection } = searchParamsCache.parse(searchParams);
   const [selectedCollection, setSelectedCollection] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState(collection ? "mint" : "collection");
+
+  const handleCollectionCreated = (collectionAddress: string) => {
+    setSelectedCollection(collectionAddress);
+    setActiveTab("mint");
+  };
 
   // Fetch user's collections
   const { data: collections, error, isLoading } = useReadContract({
@@ -48,7 +54,12 @@ const MintPage = ({
       </section>
       <hr className="border-primary mb-0" />
       <section className="my-10 w-full max-w-[1050px] mx-auto px-8 md:px-11 lg:px-36 xl:px-0 text-primary pt-4 ease-in-out duration-300">
-        <Tabs defaultValue={collection ? "mint" : "collection"} className="w-full max-w-4xl mx-auto p-6">
+        <Tabs
+          defaultValue={collection ? "mint" : "collection"}
+          className="w-full max-w-4xl mx-auto p-6"
+          value={activeTab}
+          onValueChange={setActiveTab}
+          >
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger className="data-[state=active]:bg-secondary" value="collection">
               Create a new collection
@@ -62,7 +73,7 @@ const MintPage = ({
           </TabsList>
 
           <TabsContent value="collection">
-            <CreateCollectionForm />
+          <CreateCollectionForm onCollectionCreated={handleCollectionCreated} />
           </TabsContent>
 
           <TabsContent value="default">
@@ -80,7 +91,10 @@ const MintPage = ({
               ) : error ? (
                 <p>Error fetching collections.</p>
               ) : (
-                <Select onValueChange={(value) => setSelectedCollection(value)}>
+                <Select 
+                  onValueChange={(value) => setSelectedCollection(value)}
+                  value={selectedCollection || undefined}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Select a collection" />
                   </SelectTrigger>

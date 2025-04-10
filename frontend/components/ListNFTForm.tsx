@@ -37,20 +37,42 @@ const ListNFTForm: React.FC<ListNFTFormProps> = ({ tokenId, categories, collecti
   })
   const [isApproving, setIsApproving] = useState(false)
   const [isListing, setIsListing] = useState(false)
-  
+  const [approved, setApproved] = useState(false)
+
   // Balance and gas estimation hooks
   const { data: balance } = useBalance({ address })
   const { data: feeData } = useEstimateFeesPerGas()
-  
-  // Approval and listing hooks
-  const { writeContract: writeNFTContract } = useWriteContract()
-  const { writeContract: writeMarketContract, data: listingHash, isSuccess: isListingSuccess, isPending: isListingPending } = useWriteContract()
-  const { isLoading: isApprovalLoading, isSuccess: isApprovalSuccess } = useWaitForTransactionReceipt({
+
+  // Separate hooks for approval and listing
+  const {
+    writeContract: writeApprovalContract,
+    data: approvalHash,
+  } = useWriteContract()
+
+  const {
+    writeContract: writeMarketContract,
+    data: listingHash,
+    isPending: isListingPending
+  } = useWriteContract()
+
+  // Approval transaction receipt
+  const {
+    isLoading: isApprovalLoading,
+    isSuccess: isApprovalSuccess
+  } = useWaitForTransactionReceipt({
+    hash: approvalHash
+  })
+
+  // Listing transaction receipt
+  const {
+    isLoading: isListingLoading,
+    isSuccess: isListingSuccess
+  } = useWaitForTransactionReceipt({
     hash: listingHash
   })
 
   // Approval status check
-  const { data: isApprovedForAll } = useReadContract({
+  const { data: isApproved } = useReadContract({
     address: collectionAddress as `0x${string}`,
     abi: NFT_COLLECTION_ABI,
     functionName: 'getApproved',
@@ -96,7 +118,7 @@ const ListNFTForm: React.FC<ListNFTFormProps> = ({ tokenId, categories, collecti
         return
       }
       setIsApproving(true)
-      await writeNFTContract({
+      writeApprovalContract({
         address: collectionAddress as `0x${string}`,
         abi: NFT_COLLECTION_ABI,
         functionName: 'approve',
@@ -156,6 +178,14 @@ const ListNFTForm: React.FC<ListNFTFormProps> = ({ tokenId, categories, collecti
       [field]: value
     }))
   }
+
+  useEffect(() => {
+    const isMarketplaceApproved = isApproved === MARKETPLACE_ADDRESS;
+    setApproved(isMarketplaceApproved);
+
+  }, [isApproved])
+
+  // Check if the marketplace is already approved
 
   return (
     <form onSubmit={handleSubmit} className="max-w-lg mx-auto space-y-6">
@@ -263,7 +293,7 @@ const ListNFTForm: React.FC<ListNFTFormProps> = ({ tokenId, categories, collecti
       </div>
 
       {/* Approval Button (if not approved) */}
-      {!isApprovedForAll && (
+      {!approved && (
         <CustomButton
           type="button"
           title={isApproving ? "Approving..." : "Approve Marketplace"}
@@ -278,8 +308,8 @@ const ListNFTForm: React.FC<ListNFTFormProps> = ({ tokenId, categories, collecti
       <CustomButton
         type="submit"
         title={isListing ? 'Listing...' : 'List NFT'}
-        isLoading={isListing || isListingPending}
-        isDisabled={!address || !hasSufficientFunds() || !formData.price || !formData.category}
+        isLoading={isListing || isListingPending || isListingLoading}
+        isDisabled={!address || !hasSufficientFunds() || !formData.price || !formData.category || !approved}
         className="w-full bg-accent h-12"
       />
     </form>

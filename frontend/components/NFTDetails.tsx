@@ -127,7 +127,7 @@ const NFTDetails = ({ collectionAddress, tokenId }: NFTDetailsProps) => {
                         startBlock = startBlock > CHUNK_SIZE ? startBlock - CHUNK_SIZE : BigInt(0)
                     }
                 }
-      
+
                 if (!foundEvent) {
                     console.log('No mint event found in the available block range')
                 }
@@ -188,7 +188,7 @@ const NFTDetails = ({ collectionAddress, tokenId }: NFTDetailsProps) => {
     if (listing.isAuction) {
       const endTime = parseInt(listing?.auctionEndTime?.toString() || '0');
       const now = Math.floor(Date.now() / 1000);
-      
+
       if (endTime <= now || isAuctionEnded) {
         return (
           <div className='bg-secondary rounded-[20px]'>
@@ -210,29 +210,29 @@ const NFTDetails = ({ collectionAddress, tokenId }: NFTDetailsProps) => {
             <p className="text-2xl font-bold">{formatEther(BigInt(listing.price))} ETH</p>
           </div>
           {owner !== address && (
-            <CustomButton
-                type='button'
-                title='Place bid'
-                className='bg-accent h-[60px] text-base w-full'
-                onClick={() => setShowBidModal(true)}
-            />
+                <CustomButton
+                    type='button'
+                    title='Place bid'
+                    className='bg-accent h-[60px] text-base w-full'
+                    onClick={() => setShowBidModal(true)}
+                />
             )}
         </div>
       );
     }
 
     return (
-      <div className='bg-secondary rounded-[20px]'>
+      <div className='bg-secondary rounded-[20px] w-full'>
         <div className="mb-6">
           <p className="text-sm text-gray-500">Price</p>
           <p className="text-2xl font-bold">{formatEther(BigInt(listing.price))} ETH</p>
         </div>
         {owner !== address && (
             <CustomButton
-            type='button'
-            title='Buy Now'
-            className='bg-accent h-[60px] text-base w-full'
-            onClick={() => setShowBuyModal(true)}
+                type='button'
+                title='Buy Now'
+                className='bg-accent h-[60px] text-base w-full'
+                onClick={() => setShowBuyModal(true)}
             />
         )}
       </div>
@@ -266,7 +266,7 @@ const NFTDetails = ({ collectionAddress, tokenId }: NFTDetailsProps) => {
                 quality={100}
                 unoptimized
             />
-            <div className='max-w-[1050px] mx-auto px-8 md:px-11 lg:px-36 xl:px-0 md:flex md:gap-10 md:items-start'>
+            <div className='max-w-[1050px] mx-auto px-8 md:px-11 lg:px-36 xl:px-0 md:flex md:gap-10 md:items-start w-full'>
                 <div>
                     <div className='space-y-2 mb-7'>
                         <h1 className="text-2xl md:text-3xl xl:text-5xl font-semibold">{metadata.name}</h1>
@@ -281,14 +281,14 @@ const NFTDetails = ({ collectionAddress, tokenId }: NFTDetailsProps) => {
                         <div className=''>
                             {renderAuctionOrPriceSection()}
                         </div>
-                        {listing?.isAuction && !isAuctionEnded && (
+                        {listing?.isAuction && !isAuctionEnded && owner !== address ? (
                             <CustomButton
                                 type='button'
                                 title='Place bid'
                                 className='bg-accent h-[60px] text-base w-full'
                                 onClick={() => setShowBidModal(true)}
                             />
-                        )}
+                        ):(<p className="text-center text-gray-500">You own this NFT</p>)}
                     </div>
                     <div className='mb-8'>
                         <p className="text-base text-primary xl:text-2xl font-mono font-bold mb-3">Created by</p>
@@ -332,18 +332,18 @@ const NFTDetails = ({ collectionAddress, tokenId }: NFTDetailsProps) => {
                         </Link>
                     </div>
                 </div>
-                  <div className='mb-7 bg-secondary p-8 rounded-[20px] hidden md:block'>
+                  <div className='mb-7 w-full bg-secondary p-8 rounded-[20px] hidden md:block'>
                     <div className=''>
                         {renderAuctionOrPriceSection()}
                     </div>
-                    {listing?.isAuction && !isAuctionEnded && (
+                    {/* {listing?.isAuction && !isAuctionEnded && listing?.seller !== address ? (
                         <CustomButton
                             type='button'
                             title='Place bid'
                             className='bg-accent h-[60px] text-base w-full'
                             onClick={() => setShowBidModal(true)}
                         />
-                    )}
+                    ):(<p className="text-center text-gray-500">You own this NFT</p>)} */}
                 </div>
             </div>
           </div>
@@ -381,7 +381,6 @@ const NFTDetails = ({ collectionAddress, tokenId }: NFTDetailsProps) => {
                 collectionAddress={collectionAddress}
                 tokenId={tokenId }
                 currentBid={listing.price}
-                minBidIncrement="100000000000000000" // 0.1 ETH,
             />
             <BuyModal
                 isOpen={showBuyModal}

@@ -42,7 +42,7 @@ const AuctionCountdown = ({ endTime, onEnd }: CountdownProps) => {
       const timeLeft = calculateTimeLeft();
       setTimeLeft(timeLeft);
 
-      if (timeLeft.days === 0 && timeLeft.hours === 0 && 
+      if (timeLeft.days === 0 && timeLeft.hours === 0 &&
           timeLeft.minutes === 0 && timeLeft.seconds === 0) {
         clearInterval(timer);
       }
@@ -52,22 +52,28 @@ const AuctionCountdown = ({ endTime, onEnd }: CountdownProps) => {
   }, [endTime, onEnd]);
 
   return (
-    <div className="flex justify-between items-center mt-4 mb-8">
-      <div className="text-center">
-        <p className="text-4xl font-bold">{timeLeft.days}</p>
-        <p className="text-sm text-gray-500">Days</p>
+    <div className="flex justify-between items-center mb-4">
+      <div className='flex items-start'>
+        <div className="text-center">
+          <p className="text-4xl font-bold">{timeLeft.days}</p>
+          <p className="text-sm text-gray-500">Days</p>
+        </div>
+        <p className="text-4xl font-bold px-1.5">:</p>
       </div>
-      <p className="text-4xl font-bold">:</p>
-      <div className="text-center">
-        <p className="text-4xl font-bold">{String(timeLeft.hours).padStart(2, '0')}</p>
-        <p className="text-sm text-gray-500">Hours</p>
+      <div className='flex items-start'>
+        <div className="text-center">
+          <p className="text-4xl font-bold">{String(timeLeft.hours).padStart(2, '0')}</p>
+          <p className="text-sm text-gray-500">Hours</p>
+        </div>
+        <p className="text-4xl font-bold pl-1.5">:</p>
       </div>
-      <p className="text-4xl font-bold">:</p>
-      <div className="text-center">
-        <p className="text-4xl font-bold">{String(timeLeft.minutes).padStart(2, '0')}</p>
-        <p className="text-sm text-gray-500">Minutes</p>
+      <div className='flex items-start'>
+        <div className="text-center">
+          <p className="text-4xl font-bold">{String(timeLeft.minutes).padStart(2, '0')}</p>
+          <p className="text-sm text-gray-500">Minutes</p>
+        </div>
+        <p className="text-4xl font-bold">:</p>
       </div>
-      <p className="text-4xl font-bold">:</p>
       <div className="text-center">
         <p className="text-4xl font-bold">{String(timeLeft.seconds).padStart(2, '0')}</p>
         <p className="text-sm text-gray-500">Seconds</p>

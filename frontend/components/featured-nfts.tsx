@@ -125,7 +125,7 @@ const FeaturedNFTs = ({ className }: NFTGridProps) => {
                   const owner = ownerResult as string;
 
                   const metadata = await fetchIPFSMetadata(tokenURI);
-                  
+
                   return {
                     id: `${collection.collectionAddress}-${tokenId}`,
                     tokenId,
@@ -175,6 +175,7 @@ const FeaturedNFTs = ({ className }: NFTGridProps) => {
       {nfts.map((nft) => {
         const metadata = nft.metadata;
         const imageUrl = metadata?.image;
+        console.log(nfts)
 
         return (
           <Link

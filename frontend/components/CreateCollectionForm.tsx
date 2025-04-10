@@ -1,6 +1,5 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Card, CardContent } from "./ui/card";
@@ -10,8 +9,10 @@ import { NFT_COLLECTION_FACTORY_ABI, NFT_COLLECTION_FACTORY_ADDRESS } from "@/co
 import { useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import toast from "react-hot-toast";
 
-const CreateCollectionForm = () => {
-  const router = useRouter();
+interface CreateCollectionFormProps {
+  onCollectionCreated?: (collectionAddress: string) => void;
+}
+const CreateCollectionForm = ({onCollectionCreated}: CreateCollectionFormProps) => {
   const [formData, setFormData] = useState({
     name: "",
     symbol: "",
@@ -23,27 +24,26 @@ const CreateCollectionForm = () => {
   const {  isSuccess: isConfirmed, data: receipt } =
     useWaitForTransactionReceipt({ hash });
 
-useEffect(() => {
-  if (isConfirmed && receipt) {
-    // Add proper type guards and error handling
-    const log = receipt.logs.find(log => 
-      log.address.toLowerCase() === NFT_COLLECTION_FACTORY_ADDRESS.toLowerCase()
-    );
+    useEffect(() => {
+      if (isConfirmed && receipt) {
+        const log = receipt.logs.find(log =>
+          log.address.toLowerCase() === NFT_COLLECTION_FACTORY_ADDRESS.toLowerCase()
+        );
 
-    if (log?.topics && log.topics.length >= 2) {
-      const rawAddress = log.topics[1]?.slice(26);
-      if (rawAddress) {
-        const collectionAddress = `0x${rawAddress}`;
-        router.push(`/mint?collection=${collectionAddress}`);
-        return;
+        if (log?.topics && log.topics.length >= 2) {
+          const rawAddress = log.topics[1]?.slice(26);
+          if (rawAddress) {
+            const collectionAddress = `0x${rawAddress}`;
+            if (onCollectionCreated) {
+              onCollectionCreated(collectionAddress);
+            }
+            return;
+          }
+        }
+        console.error("Failed to extract collection address from transaction logs");
+        toast.error("Collection created but failed to redirect. Check your collections.");
       }
-    }
-
-    // Handle error case
-    console.error("Failed to extract collection address from transaction logs");
-    toast.error("Collection created but failed to redirect. Check your collections.");
-  }
-}, [isConfirmed, receipt, router]);
+    }, [isConfirmed, receipt, onCollectionCreated]);
 
   const handleCreateCollection = async (e: React.FormEvent) => {
     e.preventDefault();
