@@ -13,8 +13,8 @@ interface CollectionProps {
   creator: string
 }
 
-const CollectionAddressPage = async ({ params }: {
-  params: { collectionAddress: string }
+const CollectionAddressPage = async ({params}: {
+  params: Promise<{ collectionAddress: string }>
 }) => {
   const rawCollectionAddress = (await params).collectionAddress;
   const collectionAddress = ethers.hexlify(rawCollectionAddress)
@@ -31,7 +31,7 @@ const CollectionAddressPage = async ({ params }: {
       <div className="max-w-[1050px] mx-auto px-8 py-12 text-center">
         <h1 className="text-2xl font-bold">Collection not found</h1>
         <p className="mt-2 text-gray-500">
-          The collection with address {params.collectionAddress} doesn&apos;t exist
+          The collection with address {collectionAddress} doesn&apos;t exist
         </p>
       </div>
     )
