@@ -67,6 +67,7 @@ const CollectionGrid = ({ data, itemsPerPage = 3, showPagination = false, classN
                                                 height={100}
                                                 className="w-full h-full rounded-full mr-3 object-cover"
                                                 style={{ width: "auto", height: "auto" }}
+                                                unoptimized
                                             />
                                         </div>
                                     ) : (
@@ -94,6 +95,7 @@ const CollectionGrid = ({ data, itemsPerPage = 3, showPagination = false, classN
                                     height={100}
                                     className="min-h-[315px] max-h-[315px] xl:max-h-[330px] min-w-full object-cover"
                                     style={{ width: "auto", height: "auto" }}
+                                    unoptimized
                                 />
                             </div>
                             <h1 className="text-2xl font-semibold mb-2 mt-6 truncate">{collection.name}</h1>

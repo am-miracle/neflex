@@ -7,6 +7,7 @@ import { useWriteContract, useWaitForTransactionReceipt, useReadContract } from 
 import toast from "react-hot-toast"
 import { MARKETPLACE_ABI, MARKETPLACE_ADDRESS } from "@/constants/abis/NFTMarketplace"
 import CustomButton from "./custom/CustomButton"
+import { useRouter } from "next/navigation"
 
 interface BidModalProps {
   isOpen: boolean
@@ -24,6 +25,7 @@ export default function BidModal({
   currentBid,
 }: BidModalProps) {
   const [bidAmount, setBidAmount] = useState('')
+  const router = useRouter()
 
   const { writeContract, data: hash } = useWriteContract();
   const { isLoading: isBidding, isSuccess } = useWaitForTransactionReceipt({ hash })
@@ -73,9 +75,10 @@ export default function BidModal({
   useEffect(() => {
     if (isSuccess) {
       toast.success('Bid placed successfully!')
+      router.refresh();
       onClose()
     }
-  }, [isSuccess, onClose])
+  }, [isSuccess, onClose, router])
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>

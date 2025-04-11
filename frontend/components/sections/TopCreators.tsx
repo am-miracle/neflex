@@ -2,6 +2,7 @@ import React from 'react'
 import CustomButton from '../custom/CustomButton'
 import { Rocket } from 'lucide-react'
 import Link from 'next/link'
+import Creators from '../Creators'
 
 const TopCreators = () => {
   return (
@@ -12,7 +13,7 @@ const TopCreators = () => {
             <h1 className='text-4xl font-bold'>Top creators</h1>
             <p>Checkout Top Rated Creators on the NFT Marketplace</p>
           </div>
-          <Link href="/rankings" className='hidden md:block'>
+          <Link href="/creators" className='hidden md:block'>
             <CustomButton
               type='button'
               title='View Rankings'
@@ -21,6 +22,7 @@ const TopCreators = () => {
             />
           </Link>
         </div>
+        <Creators />
         <div>
 
         </div>

@@ -99,9 +99,10 @@ const ListNFTForm: React.FC<ListNFTFormProps> = ({ tokenId, categories, collecti
   useEffect(() => {
     if (isApprovalSuccess) {
       toast.success('Marketplace approval completed')
+      router.refresh()
       setIsApproving(false)
     }
-  }, [isApprovalSuccess]);
+  }, [isApprovalSuccess, router]);
 
   useEffect(() => {
     if (isListingSuccess) {

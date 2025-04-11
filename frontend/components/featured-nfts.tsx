@@ -9,6 +9,8 @@ import Owner from "../assets/owner.svg"
 import { getClient } from '@/lib/apollo-client'
 import { GET_ALL_COLLECTIONS } from '@/lib/queries'
 import { NFT, NFTMetadata } from '@/types'
+import { MARKETPLACE_ABI, MARKETPLACE_ADDRESS } from '@/constants/abis/NFTMarketplace'
+import { ethers } from 'ethers'
 
 interface NFTGridProps {
     className?: string;
@@ -104,7 +106,7 @@ const FeaturedNFTs = ({ className }: NFTGridProps) => {
             for (let tokenId = 0; tokenId < Number(tokenCount); tokenId++) {
               const fetchTokenData = async (): Promise<NFT | null> => {
                 try {
-                  const [tokenURIResult, ownerResult] = await Promise.all([
+                  const [tokenURIResult, ownerResult, listing] = await Promise.all([
                     publicClient.readContract({
                       address: collection.collectionAddress as `0x${string}`,
                       abi: NFT_COLLECTION_ABI,
@@ -117,6 +119,12 @@ const FeaturedNFTs = ({ className }: NFTGridProps) => {
                       functionName: 'ownerOf',
                       args: [BigInt(tokenId)],
                     }),
+                    publicClient.readContract({
+                      address: MARKETPLACE_ADDRESS as `0x${string}`,
+                      abi: MARKETPLACE_ABI,
+                      functionName: 'getListing',
+                      args: [collection.collectionAddress as `0x${string}`, BigInt(tokenId)],
+                    }).catch(() => null)
                   ]);
 
                   if (!tokenURIResult || !ownerResult) return null;
@@ -126,6 +134,13 @@ const FeaturedNFTs = ({ className }: NFTGridProps) => {
 
                   const metadata = await fetchIPFSMetadata(tokenURI);
 
+                  // Process marketplace listing if exists
+                  let price, highestBid
+                  if (listing) {
+                    price = listing.price ? Number(ethers.formatEther(listing.price)) : undefined
+                    highestBid = listing.highestBid ? Number(ethers.formatEther(listing.highestBid)) : undefined
+                  }
+
                   return {
                     id: `${collection.collectionAddress}-${tokenId}`,
                     tokenId,
@@ -133,6 +148,8 @@ const FeaturedNFTs = ({ className }: NFTGridProps) => {
                     collectionName: collection.name,
                     metadata,
                     owner,
+                    price,
+                    highestBid,
                   };
                 } catch (error) {
                   console.error(`Error fetching token ${tokenId} data:`, error);
@@ -175,7 +192,6 @@ const FeaturedNFTs = ({ className }: NFTGridProps) => {
       {nfts.map((nft) => {
         const metadata = nft.metadata;
         const imageUrl = metadata?.image;
-        console.log(nfts)
 
         return (
           <Link
@@ -187,6 +203,8 @@ const FeaturedNFTs = ({ className }: NFTGridProps) => {
               image={imageUrl || "/placeholder.png"}
               owner={nft.owner}
               ownerImage={Owner}
+              price={nft.price}
+              highestBid={nft.highestBid}
               className={className}
             />
           </Link>

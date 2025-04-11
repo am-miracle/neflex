@@ -32,11 +32,12 @@ const NftCard = ({
             height={100}
             className="min-h-[295px] max-h-[238px] xl:max-h-[295px] min-w-full object-cover"
             style={{width: "auto", height: "auto"}}
+            unoptimized
         />
       </div>
 
       {/* Card Content */}
-      <div className={`py-6 px-5 bg-background ${className}`}>
+      <div className={`py-6 px-5 bg-background ${className} h-[173px]`}>
         {/* NFT Name */}
         <h3 className="text-2xl font-semibold mb-2 truncate">
           {name}
@@ -56,14 +57,14 @@ const NftCard = ({
                     />
                 </div>
             ): (
-                    <div className="w-7 h-7 rounded-full mr-3 bg-gray-300">{ name[0] }</div>
+                    <div className="w-7 h-7 rounded-full mr-3 bg-gray-300 flex items-center justify-center">{ name[0] }</div>
             )}
             <p className="font-medium font-mono truncate text-base max-w-[200px]">{shortenAddress(owner)}</p>
         </div>
 
         {/* Price and Bid Information */}
         {price && (
-            <div className="font-mono flex justify-between items-center mb-4">
+            <div className="font-mono flex justify-between items-center mt-4">
                 <div>
                     <p className="text-sm text-primary">Price</p>
                     <p className="text-base">

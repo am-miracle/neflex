@@ -19,7 +19,8 @@ export interface NFT {
   collectionName: string;
   metadata: NFTMetadata;
   owner?: string;
-  listing?: string;
+  price?: number;
+  highestBid?: number;
 }
 
 
@@ -46,4 +47,10 @@ export interface Listing {
   auctionEndTime: bigint;
   highestBidder?: `0x${string}`;
   highestBid: bigint;
+}
+
+export interface Bid {
+  bidder: string;
+  amount: bigint;
+  timestamp: number;
 }

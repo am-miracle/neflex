@@ -1,6 +1,6 @@
 "use client"
 import { formatEther } from 'viem'
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { NFT_COLLECTION_ABI } from '@/constants/abis/NFTCollection'
 import { MARKETPLACE_ABI, MARKETPLACE_ADDRESS } from '@/constants/abis/NFTMarketplace'
 import Image from 'next/image'
@@ -16,8 +16,9 @@ import UserNfts from './user-nfts'
 import AuctionCountdown from './AuctionCountdown'
 import BidModal from './BidModal'
 import BuyModal from './BuyModal'
-import { Listing, NFTMetadata } from '@/types'
+import { Bid, Listing, NFTMetadata } from '@/types'
 import { publicClient } from '@/lib/providers'
+import BidHistory from './bid-history'
 
 interface NFTDetailsProps {
     collectionAddress: `0x${string}`
@@ -38,6 +39,50 @@ const NFTDetails = ({ collectionAddress, tokenId }: NFTDetailsProps) => {
     const [tokenURI, setTokenURI] = useState<string | null>(null)
     const router = useRouter()
     const { address } = useAccount()
+    const [bids, setBids] = useState<Bid[]>([]);
+
+
+    const fetchBids = useCallback(async () => {
+        try {
+          const bidEvents = await publicClient.getLogs({
+            address: MARKETPLACE_ADDRESS as `0x${string}`,
+            event: {
+              type: 'event',
+              name: 'BidPlaced',
+              inputs: [
+                { type: 'address', name: 'bidder', indexed: true },
+                { type: 'address', name: 'nftAddress', indexed: true },
+                { type: 'uint256', name: 'tokenId', indexed: true },
+                { type: 'uint256', name: 'amount' },
+                { type: 'uint256', name: 'timestamp' },
+              ],
+            },
+            args: {
+                nftAddress: collectionAddress,
+              tokenId: tokenId,
+            },
+            fromBlock: 'earliest',
+            toBlock: 'latest',
+          });
+
+          const formattedBids = bidEvents.map(event => ({
+            bidder: event.args.bidder as string,
+            amount: event.args.amount as bigint,
+            timestamp: Number(event.blockNumber), // Or use block timestamp if available
+          }));
+
+          setBids(formattedBids);
+        } catch (error) {
+          console.error('Error fetching bids:', error);
+        }
+      },[collectionAddress, tokenId]);
+
+      // Call fetchBids when the component mounts and when a new bid is placed
+      useEffect(() => {
+        if (listing?.isAuction) {
+          fetchBids();
+        }
+      }, [collectionAddress, tokenId, listing?.isAuction, fetchBids]);
 
 
     // Fetch NFT data
@@ -79,8 +124,6 @@ const NFTDetails = ({ collectionAddress, tokenId }: NFTDetailsProps) => {
     }, [collectionAddress, tokenId])
 
   // Fetch mint date from transfer events with chunked requests
-  
-  // Usage in useEffect
   useEffect(() => {
         const fetchMintDate = async () => {
             try {
@@ -194,6 +237,7 @@ const NFTDetails = ({ collectionAddress, tokenId }: NFTDetailsProps) => {
           <div className='bg-secondary rounded-[20px]'>
             <p className="text-xl font-semibold mb-4">Auction Ended</p>
             <p className="text-gray-500">This auction has concluded</p>
+            <BidHistory bids={bids} />
           </div>
         );
       }
@@ -217,6 +261,7 @@ const NFTDetails = ({ collectionAddress, tokenId }: NFTDetailsProps) => {
                     onClick={() => setShowBidModal(true)}
                 />
             )}
+            <BidHistory bids={bids} />
         </div>
       );
     }
@@ -344,6 +389,9 @@ const NFTDetails = ({ collectionAddress, tokenId }: NFTDetailsProps) => {
                             onClick={() => setShowBidModal(true)}
                         />
                     ):(<p className="text-center text-gray-500">You own this NFT</p>)} */}
+                    {listing?.isAuction && !isAuctionEnded && owner === address && (
+                        <p className="text-center text-gray-500">You own this NFT</p>
+                    )}
                 </div>
             </div>
           </div>

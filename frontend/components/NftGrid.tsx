@@ -11,6 +11,8 @@ import { getClient } from '@/lib/apollo-client'
 import { GET_ALL_COLLECTIONS } from '@/lib/queries'
 import NftCard from './NftCard'
 import Owner from "../assets/owner.svg"
+import { MARKETPLACE_ABI, MARKETPLACE_ADDRESS } from '@/constants/abis/NFTMarketplace'
+import { ethers } from 'ethers'
 
 interface NFTGridProps {
     className?: string
@@ -103,7 +105,7 @@ const NftGrid = ({ className }: NFTGridProps) => {
   useEffect(() => {
     const fetchNFTs = async () => {
       if (collections.length === 0) {
-        setIsLoading(false);
+        setIsLoading(true);
         return;
       }
 
@@ -123,7 +125,7 @@ const NftGrid = ({ className }: NFTGridProps) => {
             for (let tokenId = 0; tokenId < Number(tokenCount); tokenId++) {
               const fetchTokenData = async (): Promise<NFT | null> => {
                 try {
-                  const [tokenURIResult, ownerResult] = await Promise.all([
+                  const [tokenURIResult, ownerResult, listing] = await Promise.all([
                     publicClient.readContract({
                       address: collection.collectionAddress as `0x${string}`,
                       abi: NFT_COLLECTION_ABI,
@@ -136,6 +138,12 @@ const NftGrid = ({ className }: NFTGridProps) => {
                       functionName: 'ownerOf',
                       args: [BigInt(tokenId)],
                     }),
+                    publicClient.readContract({
+                        address: MARKETPLACE_ADDRESS as `0x${string}`,
+                        abi: MARKETPLACE_ABI,
+                        functionName: 'getListing',
+                        args: [collection.collectionAddress as `0x${string}`, BigInt(tokenId)],
+                      }).catch(() => null) // Silently fail if not listed
                   ]);
 
                   if (!tokenURIResult || !ownerResult) return null;
@@ -144,7 +152,13 @@ const NftGrid = ({ className }: NFTGridProps) => {
                   const owner = ownerResult as string;
 
                   const metadata = await fetchIPFSMetadata(tokenURI);
-                  
+
+                  let price, highestBid
+                  if (listing) {
+                    price = listing.price ? Number(ethers.formatEther(listing.price)) : undefined
+                    highestBid = listing.highestBid ? Number(ethers.formatEther(listing.highestBid)) : undefined
+                  }
+
                   return {
                     id: `${collection.collectionAddress}-${tokenId}`,
                     tokenId,
@@ -152,6 +166,8 @@ const NftGrid = ({ className }: NFTGridProps) => {
                     collectionName: collection.name,
                     metadata,
                     owner,
+                    price,
+                    highestBid,
                   };
                 } catch (error) {
                   console.error(`Error fetching token ${tokenId} data:`, error);
@@ -203,19 +219,21 @@ const NftGrid = ({ className }: NFTGridProps) => {
               image={nft.metadata?.image || PlaceHolder}
               owner={nft.owner}
               ownerImage={Owner}
+              price={nft.price}
+              highestBid={nft.highestBid}
               className={className}
             />
           </Link>
         ))}
       </div>
-      
+
       <Pagination
         currentPage={currentPage}
         totalPages={totalPages}
         onPageChange={handlePageChange}
         showPagination={nfts.length > ITEMS_PER_PAGE}
       />
-      
+
       {nfts.length === 0 && !isLoading && (
         <div className="col-span-full text-center py-10">
           <p className="text-gray-500">No NFTs found in any collections</p>

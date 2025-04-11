@@ -91,7 +91,7 @@ const MintPage = ({
               ) : error ? (
                 <p>Error fetching collections.</p>
               ) : (
-                <Select 
+                <Select
                   onValueChange={(value) => setSelectedCollection(value)}
                   value={selectedCollection || undefined}
                 >

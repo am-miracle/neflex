@@ -1,9 +1,10 @@
 import { LoadingGrid } from '@/components/loading';
 import { Suspense } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import CreatorsTable from '@/components/creators-table';
 
 
-export default async function CreatorPage() {
+export default async function CreatorsPage() {
 
   return (
     <main className="">
@@ -45,39 +46,28 @@ export default async function CreatorPage() {
         <TabsContent value="today" className='bg-secondary h-full border-b border-background'>
           <div className='max-w-[1050px] mx-auto'>
               <Suspense fallback={<LoadingGrid />}>
-                <div className="text-center py-10">
-                  <h2 className="text-2xl xl:text-3xl font-semibold mb-3
-                  ">Top Creators Today</h2>
-                </div>
+                <CreatorsTable timeRange="today" allCreators={allCreators} />
             </Suspense>
           </div>
         </TabsContent>
         <TabsContent value="week" className='bg-secondary h-full border-b border-background'>
           <div className='max-w-[1050px] mx-auto'>
             <Suspense fallback={<LoadingGrid />}>
-              <div className="text-center py-10">
-                  <h2 className="text-2xl xl:text-3xl font-semibold mb-3">
-                    Top Creators this week
-                </h2>
-              </div>
+              <CreatorsTable timeRange="week" allCreators={allCreators} />
             </Suspense>
           </div>
           </TabsContent>
           <TabsContent value="month" className='bg-secondary h-full border-b border-background'>
           <div className='max-w-[1050px] mx-auto'>
             <Suspense fallback={<LoadingGrid />}>
-              <div className="text-center py-10">
-                <h2 className="text-2xl xl:text-3xl font-semibold mb-3">Top Creators this month</h2>
-              </div>
+              <CreatorsTable timeRange="month" allCreators={allCreators} />
             </Suspense>
           </div>
         </TabsContent>
         <TabsContent value="allTime" className='bg-secondary h-full border-b border-background'>
           <div className='max-w-[1050px] mx-auto'>
             <Suspense fallback={<LoadingGrid />}>
-              <div className="text-center py-10">
-                <h2 className="text-2xl xl:text-3xl font-semibold mb-3">Top Creators all time</h2>
-              </div>
+              <CreatorsTable timeRange="allTime" allCreators={allCreators} />
             </Suspense>
           </div>
         </TabsContent>
@@ -86,3 +76,34 @@ export default async function CreatorPage() {
     </main>
   );
 }
+
+const allCreators = [
+  {
+    rank: 1,
+    image: '/creator1.jpg',
+    name: 'CryptoPunkFan',
+    address: '0x8a9...3e4f',
+    change: '+12.5%',
+    nftsSold: 142,
+    volume: 45.2
+  },
+  {
+    rank: 2,
+    image: '/creator2.jpg',
+    name: 'NFTArtist',
+    address: '0x7b2...5c6d',
+    change: '+8.3%',
+    nftsSold: 98,
+    volume: 32.7
+  },
+  {
+    rank: 3,
+    image: '/creator3.jpg',
+    name: 'DigitalDreamer',
+    address: '0x6c3...9b2a',
+    change: '+5.9%',
+    nftsSold: 76,
+    volume: 28.1
+  },
+  // Add more creators as needed
+]
